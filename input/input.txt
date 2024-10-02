@@ -1,0 +1,17 @@
+function main3(arg1 as bool, arg2 as int, arg3 as bool) as bool(,,,)
+    dim a,b,c as uint()
+    if 1+1-1 == 1 then
+        if 1 == 2 then
+            break
+        else
+            do loop while 1>2
+            do
+                dim a as int
+                a = b+c;
+            loop until 2 == 2
+            "str";
+            (a+b) %c;
+            asd; //just identifer and comment test
+        end if
+    end if
+end function
