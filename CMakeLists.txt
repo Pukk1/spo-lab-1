@@ -13,4 +13,6 @@ add_executable(SPO_Lab1 main.c
         parser.tab.h
         lex.yy.c
 
-        parser.c parser.h)
+        parser.c parser.h
+        execution.c
+        execution.h)
