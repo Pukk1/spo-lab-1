@@ -13,8 +13,8 @@ typedef struct FunExecution FunExecution;
 
 struct ExecutionNode {
   char *text;
-  ExecutionNode *definitely; //безусловный переход
-  ExecutionNode *conditionally; //условный переход
+  ExecutionNode *definitely;    // безусловный переход
+  ExecutionNode *conditionally; // условный переход
   int childrenNumber;
   int id;
 };
@@ -25,7 +25,7 @@ struct FunExecution {
   char *filename;
   int size;
   ExecutionNode **nodes;
-  char** errors;
+  char **errors;
   int errorsCount;
 };
 
@@ -34,6 +34,6 @@ struct FilenameParseTree {
   ParseResult *tree;
 };
 
-FunExecution *executionGraph(FilenameParseTree *input, int size);
+FunExecution *executionGraph(FilenameParseTree *input);
 
 #endif // SPO_LAB1_EXECUTION_H
