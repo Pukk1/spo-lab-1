@@ -70,26 +70,26 @@
 %%
 /* SourceItem */
 
-source: listSourceItem      {{TreeNode* nodes[] = {$1};$$ = createNode("source", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}};
+source: listSourceItem      {{TreeNode* elements[] = {$1};$$ = createNode("source", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-sourceItem: funcDef         {{TreeNode* nodes[] = {$1};$$ = createNode("sourceItem", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}};
+sourceItem: funcDef         {{TreeNode* elements[] = {$1};$$ = createNode("sourceItem", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 listSourceItem:             {{$$ = NULL;}}
-    | sourceItem listSourceItem     {{TreeNode* nodes[] = {$1, $2}; $$ = createNode("listSourceItem", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}};
+    | sourceItem listSourceItem     {{TreeNode* elements[] = {$1, $2}; $$ = createNode("listSourceItem", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 
 
 /* FuncSignature */
 
-funcDef: FUNCTION funcSignature listStatement END FUNCTION {{TreeNode* nodes[] = {$2, $3}; $$ = createNode("funcDef", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}};
+funcDef: FUNCTION funcSignature listStatement END FUNCTION {{TreeNode* elements[] = {$2, $3}; $$ = createNode("funcDef", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-funcSignature: IDENTIFIER LPAREN listArgDef RPAREN optionalTypeRef {{TreeNode* nodes[] = {$3, $5};$$ = createNode("funcSignature", mallocChildNodes(*(&nodes + 1) - nodes, nodes), $1->value);}};
+funcSignature: IDENTIFIER LPAREN listArgDef RPAREN optionalTypeRef {{TreeNode* elements[] = {$3, $5};$$ = createNode("funcSignature", mallocChildNodes(*(&elements + 1) - elements, elements), $1->value);}};
 
 listArgDef:                 {{$$ = NULL;}}
-    | argDef listArgDef     {{TreeNode* nodes[] = {$1, $2};$$ = createNode("listArgDef", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}}; //чтобы не было listArgDef с двумя argDef
-    | argDef COMMA listArgDef       {{TreeNode* nodes[] = {$1, $3};$$ = createNode("listArgDef", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}};
+    | argDef listArgDef     {{TreeNode* elements[] = {$1, $2};$$ = createNode("listArgDef", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}; //чтобы не было listArgDef с двумя argDef
+    | argDef COMMA listArgDef       {{TreeNode* elements[] = {$1, $3};$$ = createNode("listArgDef", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-argDef: IDENTIFIER optionalTypeRef  {{TreeNode* nodes[] = {$1, $2};$$ = createNode("argDef", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}};
+argDef: IDENTIFIER optionalTypeRef  {{TreeNode* elements[] = {$1, $2};$$ = createNode("argDef", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 optionalTypeRef:            {{ $$ = NULL; }}
     | AS typeRef            {{$$ = $2;}};
@@ -116,28 +116,28 @@ statement: var              {{$$ =  $1;}}
     | expr SEMICOLON        {{$$ = $1;}};
 
 listStatement:              {{$$ = NULL;}}
-    | statement listStatement   {{TreeNode* nodes[] = {$1, $2};$$ = createNode("listStatement", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}};
+    | statement listStatement   {{TreeNode* elements[] = {$1, $2};$$ = createNode("listStatement", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 
 custom: IDENTIFIER {{$$ = $1;}};
 
-array: typeRef LPAREN arrayCommas RPAREN {{TreeNode* nodes[] = {$1, $3};$$ = createNode("array", mallocChildNodes(*(&nodes + 1) - nodes, nodes), $2->value);}};
+array: typeRef LPAREN arrayCommas RPAREN {{TreeNode* elements[] = {$1, $3};$$ = createNode("array", mallocChildNodes(*(&elements + 1) - elements, elements), $2->value);}};
 
 arrayCommas:                {{$$ = NULL;}}
-    | COMMA arrayCommas     {{TreeNode* nodes[] = {$1, $2};$$ = createNode("arrayCommas", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}};
+    | COMMA arrayCommas     {{TreeNode* elements[] = {$1, $2};$$ = createNode("arrayCommas", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 
 /* IF ELSE */
 
-if: IF expr THEN listStatement else END IF {{TreeNode* nodes[] = {$2, $4, $5};$$ = createNode("if", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}};
+if: IF expr THEN listStatement else END IF {{TreeNode* elements[] = {$2, $4, $5};$$ = createNode("if", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-else: ELSE listStatement    {{TreeNode* nodes[] = {$2};$$ = createNode("else", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}}
+else: ELSE listStatement    {{TreeNode* elements[] = {$2};$$ = createNode("else", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
     |                       {{$$ = NULL;}};
 
 
-while: WHILE expr listStatement WEND {{TreeNode* nodes[] = {$2, $3};$$ = createNode("while", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}}
+while: WHILE expr listStatement WEND {{TreeNode* elements[] = {$2, $3};$$ = createNode("while", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
 
-do: DO listStatement LOOP whileOrUntil expr {{TreeNode* nodes[] = {$2, $4, $5};$$ = createNode("do", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}}
+do: DO listStatement LOOP whileOrUntil expr {{TreeNode* elements[] = {$2, $4, $5};$$ = createNode("do", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
 
 whileOrUntil: WHILE         {{$$ = $1;}}
     | UNTIL                 {{$$ = $1;}}
@@ -151,31 +151,31 @@ expr: unary                 {{$$ = $1;}}
     | place                 {{$$ = $1;}}
     | literal               {{$$ = $1;}};
 
-binary: expr EQUAL expr     {{TreeNode* nodes[] = {$1, $3};$$ = createNode("EQUAL", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}};
-    | expr PLUS expr        {{TreeNode* nodes[] = {$1, $3};$$ = createNode("PLUS", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}}
-    | expr MINUS expr       {{TreeNode* nodes[] = {$1, $3};$$ = createNode("MINUS", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}}
-    | expr MUL expr        {{TreeNode* nodes[] = {$1, $3};$$ = createNode("MUL", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}}
-    | expr SLASH expr       {{TreeNode* nodes[] = {$1, $3};$$ = createNode("SLASH", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}}
-    | expr PERCENT expr     {{TreeNode* nodes[] = {$1, $3};$$ = createNode("PERCENT", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}}
-    | expr EQUAL EQUAL expr {{TreeNode* nodes[] = {$1, $4};$$ = createNode("EQUALITY", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}}
-    | expr NOTEQUAL expr    {{TreeNode* nodes[] = {$1, $3};$$ = createNode("NOTEQUAL", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}}
-    | expr LESSTHAN expr    {{TreeNode* nodes[] = {$1, $3};$$ = createNode("LESSTHAN", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}}
-    | expr GREATERTHAN expr {{TreeNode* nodes[] = {$1, $3};$$ = createNode("GREATERTHAN", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}}
-    | expr LESSTHANEQ expr  {{TreeNode* nodes[] = {$1, $3};$$ = createNode("LESSTHANEQ", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}}
-    | expr GREATERTHANEQ expr   {{TreeNode* nodes[] = {$1, $3};$$ = createNode("GREATERTHANEQ", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}}
-    | expr AND expr         {{TreeNode* nodes[] = {$1, $3};$$ = createNode("AND", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}}
-    | expr OR expr          {{TreeNode* nodes[] = {$1, $3};$$ = createNode("OR", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}};
+binary: expr EQUAL expr     {{TreeNode* elements[] = {$1, $3};$$ = createNode("EQUAL", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+    | expr PLUS expr        {{TreeNode* elements[] = {$1, $3};$$ = createNode("PLUS", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | expr MINUS expr       {{TreeNode* elements[] = {$1, $3};$$ = createNode("MINUS", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | expr MUL expr        {{TreeNode* elements[] = {$1, $3};$$ = createNode("MUL", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | expr SLASH expr       {{TreeNode* elements[] = {$1, $3};$$ = createNode("SLASH", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | expr PERCENT expr     {{TreeNode* elements[] = {$1, $3};$$ = createNode("PERCENT", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | expr EQUAL EQUAL expr {{TreeNode* elements[] = {$1, $4};$$ = createNode("EQUALITY", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | expr NOTEQUAL expr    {{TreeNode* elements[] = {$1, $3};$$ = createNode("NOTEQUAL", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | expr LESSTHAN expr    {{TreeNode* elements[] = {$1, $3};$$ = createNode("LESSTHAN", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | expr GREATERTHAN expr {{TreeNode* elements[] = {$1, $3};$$ = createNode("GREATERTHAN", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | expr LESSTHANEQ expr  {{TreeNode* elements[] = {$1, $3};$$ = createNode("LESSTHANEQ", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | expr GREATERTHANEQ expr   {{TreeNode* elements[] = {$1, $3};$$ = createNode("GREATERTHANEQ", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | expr AND expr         {{TreeNode* elements[] = {$1, $3};$$ = createNode("AND", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | expr OR expr          {{TreeNode* elements[] = {$1, $3};$$ = createNode("OR", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-unary: PLUS expr            {{TreeNode* nodes[] = {$2};$$ = createNode("PLUS", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}}
-    | MINUS expr            {{TreeNode* nodes[] = {$2};$$ = createNode("MINUS", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}}
-    | NOT expr              {{TreeNode* nodes[] = {$2};$$ = createNode("NOT", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}};
+unary: PLUS expr            {{TreeNode* elements[] = {$2};$$ = createNode("PLUS", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | MINUS expr            {{TreeNode* elements[] = {$2};$$ = createNode("MINUS", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | NOT expr              {{TreeNode* elements[] = {$2};$$ = createNode("NOT", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-braces: LPAREN expr RPAREN  {{TreeNode* nodes[] = {$2};$$ = createNode("braces", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}};
+braces: LPAREN expr RPAREN  {{TreeNode* elements[] = {$2};$$ = createNode("braces", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-callOrIndexer: expr LPAREN listExpr RPAREN  {{TreeNode* nodes[] = {$1, $3};$$ = createNode("callOrIndexer", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}};
+callOrIndexer: expr LPAREN listExpr RPAREN  {{TreeNode* elements[] = {$1, $3};$$ = createNode("callOrIndexer", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 listExpr:                   {{$$ = NULL;}}
-    | expr COMMA listExpr   {{TreeNode* nodes[] = {$1, $3};$$ = createNode("listExpr", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}}
+    | expr COMMA listExpr   {{TreeNode* elements[] = {$1, $3};$$ = createNode("listExpr", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
 
 place: IDENTIFIER           {{$$ = $1;}};
 
@@ -192,8 +192,8 @@ literal: TRUE               {{$$ = $1;}}
 /* VAR */
 
 listVar:  {{$$ = NULL;}}
-    | IDENTIFIER listVar {{TreeNode* nodes[] = {$1, $2};$$ = createNode("listVar", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}}; //чтобы не было listVar с двумя identifier
-    | IDENTIFIER COMMA listVar {{TreeNode* nodes[] = {$1, $3};$$ = createNode("listVar", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}};
+    | IDENTIFIER listVar {{TreeNode* elements[] = {$1, $2};$$ = createNode("listVar", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}; //чтобы не было listVar с двумя identifier
+    | IDENTIFIER COMMA listVar {{TreeNode* elements[] = {$1, $3};$$ = createNode("listVar", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-var: DIM listVar AS typeRef {{TreeNode* nodes[] = {$2, $4};$$ = createNode("var", mallocChildNodes(*(&nodes + 1) - nodes, nodes), "");}}
+var: DIM listVar AS typeRef {{TreeNode* elements[] = {$2, $4};$$ = createNode("var", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
 %%
