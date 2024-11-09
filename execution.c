@@ -18,10 +18,9 @@ struct Array {
 Array exceptions;
 int currentExecutionId = -1;
 
-int getNextExecutionId() {
-  currentExecutionId++;
-  return currentExecutionId;
-}
+ExecutionNode *executionBlock(TreeNode *treeNode, ExecutionNode *baseNode,
+                              ExecutionNode *nextNode,
+                              ExecutionNode *breakNode);
 
 char *mallocString(char *text) {
   char *pointer = malloc(sizeof(char) * 1024);
@@ -45,6 +44,16 @@ void addToList(Array *currentArray, void *element) {
   currentArray->nextPosition += 1;
 }
 
+void addException(char *text) {
+  char *exception = mallocString(text);
+  addToList(&exceptions, exception);
+}
+
+int getNextExecutionId() {
+  currentExecutionId++;
+  return currentExecutionId;
+}
+
 // утилита для получения всех node дерева разбора в виде массива (вызвано
 // бинарной реализацией листов)
 Array findListItemsUtil(TreeNode *treeNode) {
@@ -66,8 +75,7 @@ Array findListItemsUtil(TreeNode *treeNode) {
       sprintf(exceptionText,
               "Exception in list parsing more than two by element id %d",
               currentListNode->id);
-      char *exception = malloc(sizeof(exceptionText));
-      addToList(&exceptions, exception);
+      addException(exceptionText);
       return items;
     }
   } while (currentListNode != NULL);
@@ -92,16 +100,6 @@ Array findSourceItems(TreeNode *source) {
   }
 }
 
-// создание блока listStatement
-ExecutionNode *executionListStatementNode() {}
-
-// созадние блока
-ExecutionNode *executionBlock(TreeNode **treeNode, ExecutionNode *baseNode,
-                              ExecutionNode *nextNode,
-                              ExecutionNode *breakNode) {
-  //  TODO
-}
-
 ExecutionNode *initExecutionNode(char *text) {
   ExecutionNode *node = malloc(sizeof(ExecutionNode));
   node->id = getNextExecutionId();
@@ -111,12 +109,47 @@ ExecutionNode *initExecutionNode(char *text) {
   return node;
 }
 
+// создание блока listStatement
+ExecutionNode *executionListStatementBlock(TreeNode *treeNode,
+                                           ExecutionNode *baseNode,
+                                           ExecutionNode *nextNode,
+                                           ExecutionNode *breakNode) {
+  ExecutionNode *tmpNextNode = nextNode;
+  if (treeNode->childrenNumber == 2) {
+    tmpNextNode =
+        executionBlock(treeNode->childNodes[1], NULL, nextNode, breakNode);
+  }
+  ExecutionNode *block = initExecutionNode("");
+  block->definitely =
+      executionBlock(treeNode->childNodes[0], NULL, tmpNextNode, breakNode);
+  return block;
+}
+
+// созадние блока
+ExecutionNode *executionBlock(TreeNode *treeNode, ExecutionNode *baseNode,
+                              ExecutionNode *nextNode,
+                              ExecutionNode *breakNode) {
+  if (strcmp(treeNode[0].type, "listStatement")) {
+    return executionListStatementBlock(treeNode, baseNode, nextNode, breakNode);
+  } else {
+    char exceptionText[1024];
+    sprintf(exceptionText,
+            "Exception in tree node parsing id --> %d illegal type --> %s",
+            treeNode[0].id, treeNode[0].type);
+    addException(exceptionText);
+    ExecutionNode *exceptionNode = initExecutionNode(exceptionText);
+    exceptionNode->definitely = nextNode;
+    return exceptionNode;
+  }
+}
+
 ExecutionNode *initGraph(TreeNode *sourceItem) {
   ExecutionNode *startNode = initExecutionNode("START");
   ExecutionNode *endNode = initExecutionNode("FINISH");
-  if (sourceItem->childrenNumber == 2) {
+  TreeNode *funcDef = sourceItem->childNodes[0];
+  if (funcDef->childrenNumber == 2) {
     ExecutionNode *listStatementNode =
-        executionBlock(sourceItem->childNodes, startNode, endNode, NULL);
+        executionBlock(funcDef->childNodes[1], NULL, endNode, NULL);
     startNode->definitely = listStatementNode;
   } else {
     startNode->definitely = endNode;
