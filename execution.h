@@ -15,16 +15,15 @@ struct ExecutionNode {
   char *text;
   ExecutionNode *definitely;    // безусловный переход
   ExecutionNode *conditionally; // условный переход
-  int childrenNumber;
+//  int childrenNumber;
   int id;
 };
 
 struct FunExecution {
   char *name;
-  char *signature;
   char *filename;
-  int size;
-  ExecutionNode **nodes;
+  TreeNode *signature;
+  ExecutionNode *nodes;
   char **errors;
   int errorsCount;
 };
@@ -34,6 +33,6 @@ struct FilenameParseTree {
   ParseResult *tree;
 };
 
-FunExecution *executionGraph(FilenameParseTree *input);
+FunExecution *executionGraph(FilenameParseTree *input, int size);
 
 #endif // SPO_LAB1_EXECUTION_H

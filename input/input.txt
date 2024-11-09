@@ -14,4 +14,6 @@ function main3(arg1 as bool, arg2 as int, arg3 as bool) as bool(,,,)
             asd; //just identifer and comment test
         end if
     end if
+    if 1 == 1 then
+    end if
 end function
