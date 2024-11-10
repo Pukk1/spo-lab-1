@@ -143,6 +143,9 @@
 "!="                                {
  return NOTEQUAL;
  }
+"=="                                {
+ return EQUALITY;
+ }
 "!"                                 {
  return NOT;
  }
@@ -157,6 +160,12 @@
  }
 "-"                                 {
  return MINUS;
+ }
+"++"                                 {
+ return INCREMENT;
+ }
+"--"                                 {
+ return DECREMENT;
  }
 "<="                                {
  return LESSTHANEQ;

@@ -131,6 +131,14 @@ ExecutionNode *executionVarNode(TreeNode *treeNode, ExecutionNode *nextNode,
     return node;
 }
 
+ExecutionNode *executionExpressionNode(TreeNode *treeNode, ExecutionNode *nextNode, ExecutionNode *conditionallyNext) {
+    ExecutionNode *node = initExecutionNode("expressions");
+    node->definitely = nextNode;
+    node->conditionally = conditionallyNext;
+//    TODO
+    return node;
+}
+
 ExecutionNode *executionElseNode(TreeNode *treeNode, ExecutionNode *nextNode,
                                  ExecutionNode *breakNode) {
     ExecutionNode *node = initExecutionNode("");
@@ -146,8 +154,6 @@ ExecutionNode *executionElseNode(TreeNode *treeNode, ExecutionNode *nextNode,
 ExecutionNode *executionIfNode(TreeNode *treeNode, ExecutionNode *nextNode,
                                ExecutionNode *breakNode) {
     ExecutionNode *node = initExecutionNode("");
-    ExecutionNode *ifConditionNode = initExecutionNode("ifCondition");
-    node->definitely = ifConditionNode;
     TreeNode *elseTreeNode = NULL;
     TreeNode *ifStatements = NULL;
     if (treeNode->childrenNumber == 3) {
@@ -162,19 +168,23 @@ ExecutionNode *executionIfNode(TreeNode *treeNode, ExecutionNode *nextNode,
         ifStatements = treeNode->childNodes[1];
     }
 
+    ExecutionNode *conditionNextNode = NULL;
+    ExecutionNode *conditionConditionallyNode = NULL;
     if (elseTreeNode != NULL) {
         ExecutionNode *elseNode =
                 executionElseNode(elseTreeNode, nextNode, breakNode);
-        ifConditionNode->definitely = elseNode;
+        conditionNextNode = elseNode;
     } else {
-        ifConditionNode->definitely = nextNode;
+        conditionNextNode = nextNode;
     }
-
     if (ifStatements != NULL) {
         ExecutionNode *statementsNode =
                 executionNode(ifStatements, nextNode, breakNode);
-        ifConditionNode->conditionally = statementsNode;
+        conditionConditionallyNode = statementsNode;
     }
+    ExecutionNode *ifConditionNode = executionExpressionNode(treeNode->childNodes[0], conditionNextNode,
+                                                             conditionConditionallyNode);
+    node->definitely = ifConditionNode;
 
     return node;
 }
@@ -182,26 +192,29 @@ ExecutionNode *executionIfNode(TreeNode *treeNode, ExecutionNode *nextNode,
 ExecutionNode *executionWhileNode(TreeNode *treeNode, ExecutionNode *nextNode,
                                   ExecutionNode *breakNode) {
     ExecutionNode *node = initExecutionNode("");
-    ExecutionNode *whileConditionNode = initExecutionNode("whileCondition");
-    node->definitely = whileConditionNode;
-    whileConditionNode->definitely = nextNode;
     ExecutionNode *statementNode = NULL;
     if (treeNode->childrenNumber == 2) {
-        statementNode = executionNode(treeNode->childNodes[1], whileConditionNode, nextNode);
+        statementNode = executionNode(treeNode->childNodes[1], node, nextNode);
     } else {
         statementNode = initExecutionNode("");
-        statementNode->definitely = whileConditionNode;
+        statementNode->definitely = node;
     }
-    whileConditionNode->conditionally = statementNode;
+    ExecutionNode *whileConditionNode = executionExpressionNode(treeNode->childNodes[0], nextNode,
+                                                                statementNode);
+    node->definitely = whileConditionNode;
     return node;
 }
 
 ExecutionNode *executionDoNode(TreeNode *treeNode, ExecutionNode *nextNode,
                                ExecutionNode *breakNode) {
     ExecutionNode *node = initExecutionNode("");
-    ExecutionNode *doConditionNode = initExecutionNode("doCondition");
-    doConditionNode->conditionally = node;
-    doConditionNode->definitely = nextNode;
+    TreeNode *conditionTreeNode = NULL;
+    if (treeNode->childrenNumber == 3) {
+        conditionTreeNode = treeNode->childNodes[2];
+    } else {
+        conditionTreeNode = treeNode->childNodes[1];
+    }
+    ExecutionNode *doConditionNode = executionExpressionNode(conditionTreeNode, nextNode, node);
     ExecutionNode *statementNode = NULL;
     if (treeNode->childrenNumber == 3) {
         statementNode = executionNode(treeNode->childNodes[0], doConditionNode, nextNode);
@@ -247,14 +260,8 @@ ExecutionNode *executionNode(TreeNode *treeNode, ExecutionNode *nextNode,
     } else if (!strcmp(treeNode[0].type, "do")) {
         return executionDoNode(treeNode, nextNode, breakNode);
     } else {
-        char exceptionText[1024];
-        sprintf(exceptionText,
-                "Exception in tree node parsing id --> %d illegal type --> %s",
-                treeNode[0].id, treeNode[0].type);
-        addException(exceptionText);
-        ExecutionNode *exceptionNode = initExecutionNode(exceptionText);
-        exceptionNode->definitely = nextNode;
-        return exceptionNode;
+//        expression
+        return executionExpressionNode(treeNode, nextNode, NULL);
     }
 }
 

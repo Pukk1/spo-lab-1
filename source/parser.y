@@ -11,9 +11,10 @@
     TreeNode* node;
 }
 
-%token <node> PLUS MINUS MUL SLASH PERCENT EQUAL NOTEQUAL
+%token <node> PLUS MINUS MUL SLASH PERCENT EQUAL NOTEQUAL EQUALITY
 %token <node> LESSTHAN GREATERTHAN LESSTHANEQ GREATERTHANEQ
 %token <node> AND OR NOT
+%token <node> DECREMENT INCREMENT
 %token <node> FUNCTION
 %token <node> AS
 %token <node> ARRAY
@@ -33,6 +34,19 @@
 %token <node> TYPEDEF
 %token <node> DIM
 
+%left EQUAL
+
+%left AND OR
+
+%left EQUALITY NOTEQUAL
+
+%left LESSTHAN GREATERTHAN LESSTHANEQ GREATERTHANEQ
+
+%left PLUS MINUS
+
+%left MUL SLASH PERCENT
+
+%left INCREMENT DECREMENT
 
 %type <node> typeRef
 %type <node> funcSignature
@@ -65,7 +79,6 @@
 %type <node> whileOrUntil
 %type <node> arrayCommas
 %type <node> funcDef
-
 
 %%
 /* SourceItem */
@@ -157,7 +170,7 @@ binary: expr EQUAL expr     {{TreeNode* elements[] = {$1, $3};$$ = createNode("E
     | expr MUL expr        {{TreeNode* elements[] = {$1, $3};$$ = createNode("MUL", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
     | expr SLASH expr       {{TreeNode* elements[] = {$1, $3};$$ = createNode("SLASH", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
     | expr PERCENT expr     {{TreeNode* elements[] = {$1, $3};$$ = createNode("PERCENT", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
-    | expr EQUAL EQUAL expr {{TreeNode* elements[] = {$1, $4};$$ = createNode("EQUALITY", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | expr EQUALITY expr {{TreeNode* elements[] = {$1, $3};$$ = createNode("EQUALITY", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
     | expr NOTEQUAL expr    {{TreeNode* elements[] = {$1, $3};$$ = createNode("NOTEQUAL", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
     | expr LESSTHAN expr    {{TreeNode* elements[] = {$1, $3};$$ = createNode("LESSTHAN", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
     | expr GREATERTHAN expr {{TreeNode* elements[] = {$1, $3};$$ = createNode("GREATERTHAN", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
@@ -166,8 +179,8 @@ binary: expr EQUAL expr     {{TreeNode* elements[] = {$1, $3};$$ = createNode("E
     | expr AND expr         {{TreeNode* elements[] = {$1, $3};$$ = createNode("AND", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
     | expr OR expr          {{TreeNode* elements[] = {$1, $3};$$ = createNode("OR", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-unary: PLUS expr            {{TreeNode* elements[] = {$2};$$ = createNode("PLUS", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
-    | MINUS expr            {{TreeNode* elements[] = {$2};$$ = createNode("MINUS", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+unary: INCREMENT expr            {{TreeNode* elements[] = {$2};$$ = createNode("INCREMENT", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | DECREMENT expr            {{TreeNode* elements[] = {$2};$$ = createNode("DECREMENT", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
     | NOT expr              {{TreeNode* elements[] = {$2};$$ = createNode("NOT", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 braces: LPAREN expr RPAREN  {{TreeNode* elements[] = {$2};$$ = createNode("braces", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
