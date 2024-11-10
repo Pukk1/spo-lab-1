@@ -125,9 +125,37 @@ ExecutionNode *executionListStatementNode(TreeNode *treeNode,
 ExecutionNode *executionVarNode(TreeNode *treeNode, ExecutionNode *nextNode,
                                 ExecutionNode *breakNode) {
     ExecutionNode *node = initExecutionNode("");
-    ExecutionNode *varNode = initExecutionNode("varStatement");
-    node->definitely = varNode;
-    varNode->definitely = nextNode;
+    Array variablesList = {0, 0, NULL};
+    TreeNode *typeNode = NULL;
+    if (treeNode->childrenNumber == 2) {
+        typeNode = treeNode->childNodes[1];
+        variablesList = findListItemsUtil(treeNode->childNodes[0]);
+    } else {
+        typeNode = treeNode->childNodes[0];
+    }
+    char resultNodeType[1024];
+    if (!strcmp(typeNode->type, "array")) {
+        int size = 0;
+        if (typeNode->childrenNumber == 2) {
+            size = findListItemsUtil(typeNode->childNodes[1]).nextPosition;
+        }
+        sprintf(resultNodeType,
+                "array of %s size %d",
+                typeNode->value, size);
+    } else {
+        sprintf(resultNodeType, "%s", typeNode->value);
+    }
+
+    ExecutionNode *previous = node;
+    for (int i = 0; i < variablesList.nextPosition; ++i) {
+        char varNameAndType[1024];
+        sprintf(varNameAndType,
+                "%s as %s",
+                ((TreeNode *) variablesList.elements[i])->value, resultNodeType);
+        previous->definitely = initExecutionNode(varNameAndType);
+        previous = previous->definitely;
+    }
+    previous->definitely = nextNode;
     return node;
 }
 
