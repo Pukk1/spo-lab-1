@@ -135,8 +135,8 @@ ExecutionNode *executionElseNode(TreeNode *treeNode, ExecutionNode *nextNode,
                                  ExecutionNode *breakNode) {
     ExecutionNode *node = initExecutionNode("");
     if (treeNode->childrenNumber == 1) {
-        node->definitely = executionListStatementNode(treeNode->childNodes[0],
-                                                      nextNode, breakNode);
+        node->definitely = executionNode(treeNode->childNodes[0],
+                                         nextNode, breakNode);
     } else {
         node->definitely = nextNode;
     }
@@ -179,6 +179,40 @@ ExecutionNode *executionIfNode(TreeNode *treeNode, ExecutionNode *nextNode,
     return node;
 }
 
+ExecutionNode *executionWhileNode(TreeNode *treeNode, ExecutionNode *nextNode,
+                                  ExecutionNode *breakNode) {
+    ExecutionNode *node = initExecutionNode("");
+    ExecutionNode *whileConditionNode = initExecutionNode("whileCondition");
+    node->definitely = whileConditionNode;
+    whileConditionNode->definitely = nextNode;
+    ExecutionNode *statementNode = NULL;
+    if (treeNode->childrenNumber == 2) {
+        statementNode = executionNode(treeNode->childNodes[1], whileConditionNode, nextNode);
+    } else {
+        statementNode = initExecutionNode("");
+        statementNode->definitely = whileConditionNode;
+    }
+    whileConditionNode->conditionally = statementNode;
+    return node;
+}
+
+ExecutionNode *executionDoNode(TreeNode *treeNode, ExecutionNode *nextNode,
+                               ExecutionNode *breakNode) {
+    ExecutionNode *node = initExecutionNode("");
+    ExecutionNode *doConditionNode = initExecutionNode("doCondition");
+    doConditionNode->conditionally = node;
+    doConditionNode->definitely = nextNode;
+    ExecutionNode *statementNode = NULL;
+    if (treeNode->childrenNumber == 3) {
+        statementNode = executionNode(treeNode->childNodes[0], doConditionNode, nextNode);
+    } else {
+        statementNode = initExecutionNode("");
+        statementNode->definitely = doConditionNode;
+    }
+    node->definitely = statementNode;
+    return node;
+}
+
 // созадние блока
 ExecutionNode *executionNode(TreeNode *treeNode, ExecutionNode *nextNode,
                              ExecutionNode *breakNode) {
@@ -188,6 +222,10 @@ ExecutionNode *executionNode(TreeNode *treeNode, ExecutionNode *nextNode,
         return executionVarNode(treeNode, nextNode, breakNode);
     } else if (!strcmp(treeNode[0].type, "if")) {
         return executionIfNode(treeNode, nextNode, breakNode);
+    } else if (!strcmp(treeNode[0].type, "while")) {
+        return executionWhileNode(treeNode, nextNode, breakNode);
+    } else if (!strcmp(treeNode[0].type, "do")) {
+        return executionDoNode(treeNode, nextNode, breakNode);
     } else {
         char exceptionText[1024];
         sprintf(exceptionText,
