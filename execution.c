@@ -213,6 +213,24 @@ ExecutionNode *executionDoNode(TreeNode *treeNode, ExecutionNode *nextNode,
     return node;
 }
 
+ExecutionNode *executionBreakNode(TreeNode *treeNode, ExecutionNode *nextNode,
+                                  ExecutionNode *breakNode) {
+    ExecutionNode *node = initExecutionNode("");
+    if (breakNode == NULL) {
+        char exceptionText[1024];
+        sprintf(exceptionText,
+                "Exception in BREAK tree node parsing id --> %d no loop for break found",
+                treeNode[0].id);
+        addException(exceptionText);
+        ExecutionNode *exceptionNode = initExecutionNode(exceptionText);
+        node->definitely = exceptionNode;
+        exceptionNode->definitely = nextNode;
+    } else {
+        node->definitely = breakNode;
+    }
+    return node;
+}
+
 // созадние блока
 ExecutionNode *executionNode(TreeNode *treeNode, ExecutionNode *nextNode,
                              ExecutionNode *breakNode) {
@@ -224,6 +242,8 @@ ExecutionNode *executionNode(TreeNode *treeNode, ExecutionNode *nextNode,
         return executionIfNode(treeNode, nextNode, breakNode);
     } else if (!strcmp(treeNode[0].type, "while")) {
         return executionWhileNode(treeNode, nextNode, breakNode);
+    } else if (!strcmp(treeNode[0].type, "break")) {
+        return executionBreakNode(treeNode, nextNode, breakNode);
     } else if (!strcmp(treeNode[0].type, "do")) {
         return executionDoNode(treeNode, nextNode, breakNode);
     } else {
