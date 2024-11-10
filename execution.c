@@ -18,9 +18,8 @@ struct Array {
 Array exceptions;
 int currentExecutionId = -1;
 
-ExecutionNode *executionBlock(TreeNode *treeNode, ExecutionNode *baseNode,
-                              ExecutionNode *nextNode,
-                              ExecutionNode *breakNode);
+ExecutionNode *executionNode(TreeNode *treeNode, ExecutionNode *nextNode,
+                             ExecutionNode *breakNode);
 
 char *mallocString(char *text) {
   char *pointer = malloc(sizeof(char) * 1024);
@@ -110,27 +109,85 @@ ExecutionNode *initExecutionNode(char *text) {
 }
 
 // создание блока listStatement
-ExecutionNode *executionListStatementBlock(TreeNode *treeNode,
-                                           ExecutionNode *baseNode,
-                                           ExecutionNode *nextNode,
-                                           ExecutionNode *breakNode) {
+ExecutionNode *executionListStatementNode(TreeNode *treeNode,
+                                          ExecutionNode *nextNode,
+                                          ExecutionNode *breakNode) {
   ExecutionNode *tmpNextNode = nextNode;
   if (treeNode->childrenNumber == 2) {
-    tmpNextNode =
-        executionBlock(treeNode->childNodes[1], NULL, nextNode, breakNode);
+    tmpNextNode = executionNode(treeNode->childNodes[1], nextNode, breakNode);
   }
-  ExecutionNode *block = initExecutionNode("");
-  block->definitely =
-      executionBlock(treeNode->childNodes[0], NULL, tmpNextNode, breakNode);
-  return block;
+  ExecutionNode *node = initExecutionNode("");
+  node->definitely =
+      executionNode(treeNode->childNodes[0], tmpNextNode, breakNode);
+  return node;
+}
+
+ExecutionNode *executionVarNode(TreeNode *treeNode, ExecutionNode *nextNode,
+                                ExecutionNode *breakNode) {
+  ExecutionNode *node = initExecutionNode("");
+  ExecutionNode *varNode = initExecutionNode("varStatement");
+  node->definitely = varNode;
+  varNode->definitely = nextNode;
+  return node;
+}
+
+ExecutionNode *executionElseNode(TreeNode *treeNode, ExecutionNode *nextNode,
+                                 ExecutionNode *breakNode) {
+  ExecutionNode *node = initExecutionNode("");
+  if (treeNode->childrenNumber == 1) {
+    node->definitely = executionListStatementNode(treeNode->childNodes[0],
+                                                  nextNode, breakNode);
+  } else {
+    node->definitely = nextNode;
+  }
+  return node;
+}
+
+ExecutionNode *executionIfNode(TreeNode *treeNode, ExecutionNode *nextNode,
+                               ExecutionNode *breakNode) {
+  ExecutionNode *node = initExecutionNode("");
+  ExecutionNode *ifConditionNode = initExecutionNode("ifCondition");
+  node->definitely = ifConditionNode;
+  TreeNode *elseTreeNode = NULL;
+  TreeNode *ifStatements = NULL;
+  if (treeNode->childrenNumber == 3) {
+    //    случай когда есть стейтменты в if и существует else
+    ifStatements = treeNode->childNodes[1];
+    elseTreeNode = treeNode->childNodes[2];
+  } else if (treeNode->childrenNumber == 2 &&
+             !strcmp(treeNode->childNodes[1]->type, "else")) {
+    //    когда нет стейтментов в if
+    elseTreeNode = treeNode->childNodes[1];
+  } else if (treeNode->childrenNumber == 2) {
+    ifStatements = treeNode->childNodes[1];
+  }
+
+  if (elseTreeNode != NULL) {
+    ExecutionNode *elseNode =
+        executionElseNode(elseTreeNode, nextNode, breakNode);
+    ifConditionNode->definitely = elseNode;
+  } else {
+    ifConditionNode->definitely = nextNode;
+  }
+
+  if (ifStatements != NULL) {
+    ExecutionNode *statementsNode =
+        executionNode(ifStatements, nextNode, breakNode);
+    ifConditionNode->conditionally = statementsNode;
+  }
+
+  return node;
 }
 
 // созадние блока
-ExecutionNode *executionBlock(TreeNode *treeNode, ExecutionNode *baseNode,
-                              ExecutionNode *nextNode,
-                              ExecutionNode *breakNode) {
-  if (strcmp(treeNode[0].type, "listStatement")) {
-    return executionListStatementBlock(treeNode, baseNode, nextNode, breakNode);
+ExecutionNode *executionNode(TreeNode *treeNode, ExecutionNode *nextNode,
+                             ExecutionNode *breakNode) {
+  if (!strcmp(treeNode[0].type, "listStatement")) {
+    return executionListStatementNode(treeNode, nextNode, breakNode);
+  } else if (!strcmp(treeNode[0].type, "var")) {
+    return executionVarNode(treeNode, nextNode, breakNode);
+  } else if (!strcmp(treeNode[0].type, "if")) {
+    return executionIfNode(treeNode, nextNode, breakNode);
   } else {
     char exceptionText[1024];
     sprintf(exceptionText,
@@ -149,7 +206,7 @@ ExecutionNode *initGraph(TreeNode *sourceItem) {
   TreeNode *funcDef = sourceItem->childNodes[0];
   if (funcDef->childrenNumber == 2) {
     ExecutionNode *listStatementNode =
-        executionBlock(funcDef->childNodes[1], NULL, endNode, NULL);
+        executionNode(funcDef->childNodes[1], endNode, NULL);
     startNode->definitely = listStatementNode;
   } else {
     startNode->definitely = endNode;
