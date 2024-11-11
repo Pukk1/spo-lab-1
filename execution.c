@@ -159,12 +159,29 @@ ExecutionNode *executionVarNode(TreeNode *treeNode, ExecutionNode *nextNode,
     return node;
 }
 
-ExecutionNode *executionExpressionNode(TreeNode *treeNode, ExecutionNode *nextNode, ExecutionNode *conditionallyNext) {
-    ExecutionNode *node = initExecutionNode("expressions");
+ExecutionNode *executionExpressionNode(TreeNode *treeNode, ExecutionNode *nextNode, ExecutionNode *conditionallyNext,
+                                       ExecutionNode *parentNode) {
+    ExecutionNode *node = initExecutionNode("");
+    int hasNewParent = 0;
+    if (parentNode == NULL) {
+        hasNewParent = 1;
+        parentNode = initExecutionNode("");
+    }
     node->definitely = nextNode;
     node->conditionally = conditionallyNext;
-//    TODO
-    return node;
+    if (treeNode->childrenNumber == 2) {
+        ExecutionNode *leftNode = executionExpressionNode(treeNode->childNodes[0], NULL, NULL, parentNode);
+        ExecutionNode *rightNode = executionExpressionNode(treeNode->childNodes[1], node, NULL, leftNode);
+    } else if (treeNode->childrenNumber != 0 && !strcmp(treeNode->childNodes[0]->type, "braces")) {
+        executionExpressionNode(treeNode->childNodes[0], node, NULL, parentNode);
+    } else {
+        parentNode->definitely = node;
+    }
+    if (hasNewParent) {
+        return parentNode;
+    } else {
+        return node;
+    }
 }
 
 ExecutionNode *executionElseNode(TreeNode *treeNode, ExecutionNode *nextNode,
@@ -210,10 +227,8 @@ ExecutionNode *executionIfNode(TreeNode *treeNode, ExecutionNode *nextNode,
                 executionNode(ifStatements, nextNode, breakNode);
         conditionConditionallyNode = statementsNode;
     }
-    ExecutionNode *ifConditionNode = executionExpressionNode(treeNode->childNodes[0], conditionNextNode,
-                                                             conditionConditionallyNode);
-    node->definitely = ifConditionNode;
-
+    executionExpressionNode(treeNode->childNodes[0], conditionNextNode,
+                            conditionConditionallyNode, node);
     return node;
 }
 
@@ -227,9 +242,8 @@ ExecutionNode *executionWhileNode(TreeNode *treeNode, ExecutionNode *nextNode,
         statementNode = initExecutionNode("");
         statementNode->definitely = node;
     }
-    ExecutionNode *whileConditionNode = executionExpressionNode(treeNode->childNodes[0], nextNode,
-                                                                statementNode);
-    node->definitely = whileConditionNode;
+    executionExpressionNode(treeNode->childNodes[0], nextNode,
+                            statementNode, node);
     return node;
 }
 
@@ -242,7 +256,7 @@ ExecutionNode *executionDoNode(TreeNode *treeNode, ExecutionNode *nextNode,
     } else {
         conditionTreeNode = treeNode->childNodes[1];
     }
-    ExecutionNode *doConditionNode = executionExpressionNode(conditionTreeNode, nextNode, node);
+    ExecutionNode *doConditionNode = executionExpressionNode(conditionTreeNode, nextNode, node, NULL);
     ExecutionNode *statementNode = NULL;
     if (treeNode->childrenNumber == 3) {
         statementNode = executionNode(treeNode->childNodes[0], doConditionNode, nextNode);
@@ -289,7 +303,7 @@ ExecutionNode *executionNode(TreeNode *treeNode, ExecutionNode *nextNode,
         return executionDoNode(treeNode, nextNode, breakNode);
     } else {
 //        expression
-        return executionExpressionNode(treeNode, nextNode, NULL);
+        return executionExpressionNode(treeNode, nextNode, NULL, NULL);
     }
 }
 
