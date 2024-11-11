@@ -105,6 +105,25 @@ ExecutionNode *initExecutionNode(char *text) {
     node->text = mallocString(text);
     node->definitely = NULL;
     node->conditionally = NULL;
+    node->operationTree = NULL;
+    return node;
+}
+
+TreeNode *mallocTreeNode(char *type, char *value, int nodeNumber) {
+    TreeNode *node = malloc(sizeof(TreeNode));
+    node->id = getNextExecutionId();
+    if (type) {
+        node->type = mallocString(type);
+    } else {
+        node->type = NULL;
+    }
+    if (value) {
+        node->value = mallocString(value);
+    } else {
+        node->value = NULL;
+    }
+    node->childNodes = malloc(sizeof(TreeNode *) * nodeNumber);
+    node->childrenNumber = nodeNumber;
     return node;
 }
 
@@ -159,7 +178,8 @@ ExecutionNode *executionVarNode(TreeNode *treeNode, ExecutionNode *nextNode,
     return node;
 }
 
-ExecutionNode *executionExpressionNode(TreeNode *treeNode, ExecutionNode *nextNode, ExecutionNode *conditionallyNext,
+//чтобы распарсить дерево операций в последовательность операций
+/*ExecutionNode *executionExpressionNode(TreeNode *treeNode, ExecutionNode *nextNode, ExecutionNode *conditionallyNext,
                                        ExecutionNode *parentNode) {
     ExecutionNode *node = initExecutionNode("");
     int hasNewParent = 0;
@@ -182,6 +202,42 @@ ExecutionNode *executionExpressionNode(TreeNode *treeNode, ExecutionNode *nextNo
     } else {
         return node;
     }
+}*/
+
+// для построения дерева операций
+TreeNode *operationTreeNode(TreeNode *parsingTree) {
+    TreeNode *node = mallocTreeNode(parsingTree->type, parsingTree->value, parsingTree->childrenNumber);
+    // TODO("делать доп действия и создавать доп узлы для каждого конкретного типа node")
+    for (int i = 0; i < parsingTree->childrenNumber; ++i) {
+        node->childNodes[i] = operationTreeNode(parsingTree->childNodes[i]);
+    }
+    return node;
+}
+
+char *expressionNodeToString(TreeNode *treeNode) {
+    // TODO("делать доп действия и создавать доп узлы для каждого конкретного типа node")
+    if (treeNode->childrenNumber == 0) {
+        return mallocString(treeNode->value);
+    } else if (treeNode->childrenNumber == 1) {
+        char *childStr = expressionNodeToString(treeNode->childNodes[0]);
+        char exceptionText[1024];
+        sprintf(exceptionText,
+                "%s(%s)",
+                treeNode->type, childStr);
+        return mallocString(treeNode->value);
+    } else {
+        char *childLeftStr = expressionNodeToString(treeNode->childNodes[0]);
+        char *childRightStr = expressionNodeToString(treeNode->childNodes[1]);
+        char exceptionText[1024];
+        sprintf(exceptionText,
+                "%s %s %s",
+                childLeftStr, treeNode->type, childRightStr);
+        return mallocString(treeNode->value);
+    }
+}
+
+ExecutionNode *executionExpressionNode(TreeNode *treeNode) {
+    return initExecutionNode(expressionNodeToString(treeNode));
 }
 
 ExecutionNode *executionElseNode(TreeNode *treeNode, ExecutionNode *nextNode,
@@ -227,8 +283,10 @@ ExecutionNode *executionIfNode(TreeNode *treeNode, ExecutionNode *nextNode,
                 executionNode(ifStatements, nextNode, breakNode);
         conditionConditionallyNode = statementsNode;
     }
-    executionExpressionNode(treeNode->childNodes[0], conditionNextNode,
-                            conditionConditionallyNode, node);
+    ExecutionNode *conditionNode = executionExpressionNode(treeNode->childNodes[0]);
+    node->definitely = conditionNode;
+    conditionNode->definitely = conditionNextNode;
+    conditionNode->conditionally = conditionConditionallyNode;
     return node;
 }
 
@@ -242,8 +300,10 @@ ExecutionNode *executionWhileNode(TreeNode *treeNode, ExecutionNode *nextNode,
         statementNode = initExecutionNode("");
         statementNode->definitely = node;
     }
-    executionExpressionNode(treeNode->childNodes[0], nextNode,
-                            statementNode, node);
+    ExecutionNode *conditionNode = executionExpressionNode(treeNode->childNodes[0]);
+    node->definitely = conditionNode;
+    conditionNode->definitely = nextNode;
+    conditionNode->conditionally = statementNode;
     return node;
 }
 
@@ -256,7 +316,9 @@ ExecutionNode *executionDoNode(TreeNode *treeNode, ExecutionNode *nextNode,
     } else {
         conditionTreeNode = treeNode->childNodes[1];
     }
-    ExecutionNode *doConditionNode = executionExpressionNode(conditionTreeNode, nextNode, node, NULL);
+    ExecutionNode *doConditionNode = executionExpressionNode(conditionTreeNode);
+    doConditionNode->definitely = nextNode;
+    doConditionNode->conditionally = node;
     ExecutionNode *statementNode = NULL;
     if (treeNode->childrenNumber == 3) {
         statementNode = executionNode(treeNode->childNodes[0], doConditionNode, nextNode);
@@ -303,7 +365,8 @@ ExecutionNode *executionNode(TreeNode *treeNode, ExecutionNode *nextNode,
         return executionDoNode(treeNode, nextNode, breakNode);
     } else {
 //        expression
-        return executionExpressionNode(treeNode, nextNode, NULL, NULL);
+        ExecutionNode *expressionNode = executionExpressionNode(treeNode);
+        expressionNode->definitely = nextNode;
     }
 }
 

@@ -15,7 +15,7 @@ struct ExecutionNode {
   char *text;
   ExecutionNode *definitely;    // безусловный переход
   ExecutionNode *conditionally; // условный переход
-//  int childrenNumber;
+  TreeNode *operationTree;
   int id;
 };
 
