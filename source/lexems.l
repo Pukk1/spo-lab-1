@@ -189,7 +189,7 @@
  return RPAREN;
  }
 "="                                 {
- return EQUAL;
+ return SET;
  }
 [a-zA-Z_][a-zA-Z_0-9]* {
     yylval.node = createNode("IDENTIFIER", NULL, yytext);

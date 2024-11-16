@@ -206,10 +206,46 @@ ExecutionNode *executionVarNode(TreeNode *treeNode, ExecutionNode *nextNode,
 
 // для построения дерева операций
 TreeNode *operationTreeNode(TreeNode *parsingTree) {
-    TreeNode *node = mallocTreeNode(parsingTree->type, parsingTree->value, parsingTree->childrenNumber);
-    // TODO("делать доп действия и создавать доп узлы для каждого конкретного типа node")
-    for (int i = 0; i < parsingTree->childrenNumber; ++i) {
-        node->childNodes[i] = operationTreeNode(parsingTree->childNodes[i]);
+    TreeNode *node = NULL;
+//    те узлы которые всегда скипаем, либо создаём узел для дальнейшей работы
+    if (!strcmp(parsingTree->type, "braces")) {
+        return operationTreeNode(parsingTree->childNodes[0]);
+    }
+
+    if (parsingTree->childrenNumber == 2) {
+        node = mallocTreeNode(parsingTree->type, parsingTree->value, parsingTree->childrenNumber);
+
+        if (!strcmp(node->type, "SET")) {
+            char valuePlace[1024];
+            sprintf(valuePlace,
+                    "value place '%s'",
+                    parsingTree->childNodes[0]->value);
+            node->childNodes[0] = mallocTreeNode(NULL, valuePlace, 0);
+            node->childNodes[1] = operationTreeNode(parsingTree->childNodes[1]);
+        } else {
+            node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0]);
+            node->childNodes[1] = operationTreeNode(parsingTree->childNodes[1]);
+        }
+    } else if (parsingTree->childrenNumber == 1) {
+        node = mallocTreeNode("SET", NULL, 2);
+        char valuePlace[1024];
+        sprintf(valuePlace,
+                "value place '%s'",
+                parsingTree->childNodes[0]->value);
+        node->childNodes[0] = mallocTreeNode(NULL, valuePlace, 0);
+        if (!strcmp(node->type, "INCREMENT")) {
+            node->childNodes[1] = mallocTreeNode("PLUS", NULL, 2);
+        } else {
+            node->childNodes[1] = mallocTreeNode("MINUS", NULL, 2);
+        }
+        node->childNodes[1]->childNodes[0] = mallocTreeNode(NULL, "const: 1", 0);
+    } else if (parsingTree->childrenNumber == 0) {
+        node = mallocTreeNode("read", NULL, 1);
+        char valuePlace[1024];
+        sprintf(valuePlace,
+                "value place '%s'",
+                parsingTree->value);
+        node->childNodes[0] = mallocTreeNode(NULL, valuePlace, 0);
     }
     return node;
 }
@@ -237,7 +273,9 @@ char *expressionNodeToString(TreeNode *treeNode) {
 }
 
 ExecutionNode *executionExpressionNode(TreeNode *treeNode) {
-    return initExecutionNode(expressionNodeToString(treeNode));
+    ExecutionNode *node = initExecutionNode(expressionNodeToString(treeNode));
+    node->operationTree = operationTreeNode(treeNode);
+    return node;
 }
 
 ExecutionNode *executionElseNode(TreeNode *treeNode, ExecutionNode *nextNode,
