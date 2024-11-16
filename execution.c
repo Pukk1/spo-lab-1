@@ -244,12 +244,12 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
                 node->childNodes[i] = operationTreeNode(argsArray.elements[i], funCalls);
             }
         }
-        char executionDescription[1024];
-        sprintf(executionDescription,
-                "%d, %s, %s",
-                node->id, funCalls->currentFunName, parsingTree->childNodes[0]->value);
-        char *mallocedExecDescription = mallocString(executionDescription);
-        addToList(funCalls->funCalls, mallocedExecDescription);
+        char funCallOperationIdNodeString[1024];
+        sprintf(funCallOperationIdNodeString, "%d", node->id);
+        TreeNode *funCallOperationIdNode = mallocTreeNode("operationTreeId", funCallOperationIdNodeString, 1);
+        TreeNode *calledFunNameNode = mallocTreeNode("call", parsingTree->childNodes[0]->value, 0);
+        funCallOperationIdNode->childNodes[0] = calledFunNameNode;
+        addToList(funCalls->funCalls, funCallOperationIdNode);
     } else if (parsingTree->childrenNumber == 2) {
         node = mallocTreeNode(parsingTree->type, parsingTree->value, parsingTree->childrenNumber);
 
@@ -476,10 +476,16 @@ FunExecution *executionGraph(FilenameParseTree *input, int size) {
             currentFunExecution.signature =
                     currentSourceItemElements[j]->childNodes[0];
 
-            char **nodes = malloc(sizeof(char *) * START_ARRAY_SIZE);
+            char **nodes = malloc(sizeof(TreeNode *) * START_ARRAY_SIZE);
             Array funs = (Array) {START_ARRAY_SIZE, 0, nodes};
             FunCalls funCalls = (FunCalls) {&funs, currentFunExecution.name};
             currentFunExecution.nodes = initGraph(currentSourceItemElements[j], &funCalls);
+            TreeNode *funCallsRoot = mallocTreeNode("currentFunction", currentFunExecution.name,
+                                                    funCalls.funCalls->nextPosition);
+            for (int k = 0; k < funCalls.funCalls->nextPosition; ++k) {
+                funCallsRoot->childNodes[k] = funCalls.funCalls->elements[k];
+            }
+            currentFunExecution.funCalls = funCallsRoot;
             currentFunExecution.errorsCount = exceptions.nextPosition;
             currentFunExecution.errors = exceptions.elements;
             result[size * i + j] = currentFunExecution;

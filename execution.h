@@ -23,6 +23,7 @@ struct FunExecution {
   char *name;
   char *filename;
   TreeNode *signature;
+  TreeNode *funCalls;
   ExecutionNode *nodes;
   char **errors;
   int errorsCount;
