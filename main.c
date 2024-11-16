@@ -16,7 +16,10 @@ int main(int argc, char *argv[]) {
             FunExecution *executionRes =
                     executionGraph(&(FilenameParseTree) {argv[1], result}, 1);
             for (int i = 0; i < result->errorsCount; ++i) {
-                fprintf(stderr, result->errors[i]);
+                fprintf(stderr, "%s", result->errors[i]);
+            }
+            for (int i = 0; i < executionRes->errorsCount; ++i) {
+                fprintf(stderr, "%s", executionRes->errors[i]);
             }
             freeMem(result);
         } else {

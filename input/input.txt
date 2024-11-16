@@ -1,6 +1,6 @@
 function main3(arg1 as bool, arg2 as int, arg3 as bool) as bool(,,,)
     dim bbb as asd
-    1+1*1;
+    1+1*fun(bbb);
     dim a,b,c as uint()
     dim d as string
     dim as bool

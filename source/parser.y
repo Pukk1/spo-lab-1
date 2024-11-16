@@ -188,6 +188,7 @@ braces: LPAREN expr RPAREN  {{TreeNode* elements[] = {$2};$$ = createNode("brace
 callOrIndexer: expr LPAREN listExpr RPAREN  {{TreeNode* elements[] = {$1, $3};$$ = createNode("callOrIndexer", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 listExpr:                   {{$$ = NULL;}}
+    | expr listExpr         {{TreeNode* elements[] = {$1, $2};$$ = createNode("listExpr", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
     | expr COMMA listExpr   {{TreeNode* elements[] = {$1, $3};$$ = createNode("listExpr", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
 
 place: IDENTIFIER           {{$$ = $1;}};
