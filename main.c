@@ -13,13 +13,16 @@ int main(int argc, char *argv[]) {
             fclose(input_file);
             printTree(result->nodes, result->size, output_file);
             fclose(output_file);
-            FunExecution *executionRes =
+            Array *executionRes =
                     executionGraph(&(FilenameParseTree) {argv[1], result}, 1);
             for (int i = 0; i < result->errorsCount; ++i) {
                 fprintf(stderr, "%s", result->errors[i]);
             }
-            for (int i = 0; i < executionRes->errorsCount; ++i) {
-                fprintf(stderr, "%s", executionRes->errors[i]);
+            for (int i = 0; i < executionRes->nextPosition; ++i) {
+                FunExecution *funExecution = executionRes->elements[i];
+                for (int j = 0; j < funExecution->errorsCount; ++j) {
+                    fprintf(stderr, "%s", funExecution->errors[j]);
+                }
             }
             freeMem(result);
         } else {

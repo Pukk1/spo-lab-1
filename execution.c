@@ -5,16 +5,9 @@
 #include "execution.h"
 #include <string.h>
 
-typedef struct Array Array;
 typedef struct FunCalls FunCalls;
 
 const int START_ARRAY_SIZE = 8;
-
-struct Array {
-    int size;
-    int nextPosition;
-    void **elements;
-};
 
 struct FunCalls {
     Array *funCalls;
@@ -456,39 +449,44 @@ ExecutionNode *initGraph(TreeNode *sourceItem, FunCalls *funCalls) {
 }
 
 void initExceptions() {
-    char **nodes = malloc(sizeof(char *) * START_ARRAY_SIZE);
+    void **nodes = malloc(sizeof(char *) * START_ARRAY_SIZE);
     exceptions = (Array) {START_ARRAY_SIZE, 0, nodes};
 }
 
-FunExecution *executionGraph(FilenameParseTree *input, int size) {
-    FunExecution *result = malloc(sizeof(FunExecution) * size);
+Array *executionGraph(FilenameParseTree *input, int size) {
+    void **resultNodes = malloc(sizeof(FunExecution *) * START_ARRAY_SIZE);
+    Array *result = malloc(sizeof(Array));
+    result->size = START_ARRAY_SIZE;
+    result->nextPosition = 0;
+    result->elements = resultNodes;
+
     for (int i = 0; i < size; ++i) {
         initExceptions();
         TreeNode *sourceNode = findSourceNode(input[i]);
         Array sourceItems = findSourceItems(sourceNode);
         for (int j = 0; j < sourceItems.nextPosition; ++j) {
-            FunExecution currentFunExecution;
-            currentFunExecution.filename = input[i].filename;
+            FunExecution *currentFunExecution = malloc(sizeof(FunExecution));
+            currentFunExecution->filename = input[i].filename;
             TreeNode **currentSourceItemElements =
                     ((TreeNode **) sourceItems.elements);
-            currentFunExecution.name =
+            currentFunExecution->name =
                     currentSourceItemElements[j]->childNodes[0]->childNodes[0]->value;
-            currentFunExecution.signature =
+            currentFunExecution->signature =
                     currentSourceItemElements[j]->childNodes[0];
 
-            char **nodes = malloc(sizeof(TreeNode *) * START_ARRAY_SIZE);
+            void **nodes = malloc(sizeof(TreeNode *) * START_ARRAY_SIZE);
             Array funs = (Array) {START_ARRAY_SIZE, 0, nodes};
-            FunCalls funCalls = (FunCalls) {&funs, currentFunExecution.name};
-            currentFunExecution.nodes = initGraph(currentSourceItemElements[j], &funCalls);
-            TreeNode *funCallsRoot = mallocTreeNode("currentFunction", currentFunExecution.name,
+            FunCalls funCalls = (FunCalls) {&funs, currentFunExecution->name};
+            currentFunExecution->nodes = initGraph(currentSourceItemElements[j], &funCalls);
+            TreeNode *funCallsRoot = mallocTreeNode("currentFunction", currentFunExecution->name,
                                                     funCalls.funCalls->nextPosition);
             for (int k = 0; k < funCalls.funCalls->nextPosition; ++k) {
                 funCallsRoot->childNodes[k] = funCalls.funCalls->elements[k];
             }
-            currentFunExecution.funCalls = funCallsRoot;
-            currentFunExecution.errorsCount = exceptions.nextPosition;
-            currentFunExecution.errors = exceptions.elements;
-            result[size * i + j] = currentFunExecution;
+            currentFunExecution->funCalls = funCallsRoot;
+            currentFunExecution->errorsCount = exceptions.nextPosition;
+            currentFunExecution->errors = exceptions.elements;
+            addToList(result, currentFunExecution);
         }
     }
     return result;

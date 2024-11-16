@@ -10,6 +10,7 @@
 typedef struct FilenameParseTree FilenameParseTree;
 typedef struct ExecutionNode ExecutionNode;
 typedef struct FunExecution FunExecution;
+typedef struct Array Array;
 
 struct ExecutionNode {
   char *text;
@@ -17,6 +18,12 @@ struct ExecutionNode {
   ExecutionNode *conditionally; // условный переход
   TreeNode *operationTree;
   int id;
+};
+
+struct Array {
+    int size;
+    int nextPosition;
+    void **elements;
 };
 
 struct FunExecution {
@@ -34,6 +41,6 @@ struct FilenameParseTree {
   ParseResult *tree;
 };
 
-FunExecution *executionGraph(FilenameParseTree *input, int size);
+Array *executionGraph(FilenameParseTree *input, int size);
 
 #endif // SPO_LAB1_EXECUTION_H
