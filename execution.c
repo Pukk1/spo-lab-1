@@ -105,6 +105,7 @@ ExecutionNode *initExecutionNode(char *text) {
     node->definitely = NULL;
     node->conditionally = NULL;
     node->operationTree = NULL;
+    node->printed = 0;
     return node;
 }
 
@@ -490,4 +491,93 @@ Array *executionGraph(FilenameParseTree *input, int size) {
         }
     }
     return result;
+}
+
+void printNode(TreeNode *node, FILE *outputFile) {
+    if (node == NULL) {
+        return;
+    }
+    int childrenNumber = node->childrenNumber;
+    for (int i = 0; i < childrenNumber; ++i) {
+        printNode(node->childNodes[i], outputFile);
+        fprintf(outputFile, "node%d", node->id);
+        fprintf(outputFile, "([");
+        fprintf(outputFile, "Type: %s", node->type);
+        if (node->value != NULL && strlen(node->value) > 0) {
+            fprintf(outputFile, ", Value: %s", node->value);
+        }
+        fprintf(outputFile, "])");
+
+        TreeNode *childNode = node->childNodes[i];
+        fprintf(outputFile, " --> ");
+        fprintf(outputFile, "node%d", childNode->id);
+        fprintf(outputFile, "([");
+        fprintf(outputFile, "Type: %s", childNode->type);
+        if (childNode->value != NULL && strlen(childNode->value) > 0) {
+            fprintf(outputFile, ", Value: %s", childNode->value);
+        }
+        fprintf(outputFile, "])");
+        fprintf(outputFile, "\n");
+    }
+}
+
+void printTreeNode(TreeNode *node, FILE *outputFile) {
+    fprintf(outputFile, "flowchart TB\n");
+    printNode(node, outputFile);
+    fprintf(outputFile, "\n");
+}
+
+void printExecutionNode(ExecutionNode *father, ExecutionNode *child, FILE *outputFile) {
+    fprintf(outputFile, "node%d", father->id);
+    fprintf(outputFile, "([");
+    fprintf(outputFile, "Text: %s", father->text);
+    fprintf(outputFile, "])");
+    fprintf(outputFile, " --> ");
+    fprintf(outputFile, "node%d", child->id);
+    fprintf(outputFile, "([");
+    fprintf(outputFile, "Text: %s", child->text);
+    fprintf(outputFile, "])");
+    fprintf(outputFile, "\n");
+}
+
+void printExecutionGraphNodeToFile(ExecutionNode *executionNode, FILE *outputOperationTreesFile,
+                                   FILE *outputExecutionFile) {
+    if (executionNode->printed) {
+        return;
+    } else {
+        executionNode->printed = 1;
+    }
+
+    if (executionNode->operationTree) {
+        printNode(executionNode->operationTree, outputOperationTreesFile);
+    }
+
+    ExecutionNode *definitely = executionNode->definitely;
+    if (definitely) {
+        printExecutionGraphNodeToFile(definitely, outputOperationTreesFile, outputExecutionFile);
+
+        printExecutionNode(executionNode, definitely, outputExecutionFile);
+    }
+
+    ExecutionNode *conditionally = executionNode->conditionally;
+    if (conditionally) {
+        printExecutionGraphNodeToFile(conditionally, outputOperationTreesFile, outputExecutionFile);
+
+        printExecutionNode(executionNode, conditionally, outputExecutionFile);
+    }
+}
+
+void printExecutionGraphToFile(ExecutionNode *executionNode, FILE *outputOperationTreesFile,
+                               FILE *outputExecutionFile) {
+    fprintf(outputOperationTreesFile, "flowchart TB\n");
+    fprintf(outputExecutionFile, "flowchart TB\n");
+    printExecutionGraphNodeToFile(executionNode, outputOperationTreesFile, outputExecutionFile);
+    fprintf(outputOperationTreesFile, "\n");
+    fprintf(outputExecutionFile, "\n");
+}
+
+void printExecution(FunExecution *funExecution, FILE *outputFunCallFile, FILE *outputOperationTreesFile,
+                    FILE *outputExecutionFile) {
+    printTreeNode(funExecution->funCalls, outputFunCallFile);
+    printExecutionGraphToFile(funExecution->nodes, outputOperationTreesFile, outputExecutionFile);
 }
