@@ -542,12 +542,12 @@ void printTreeNode(TreeNode *node, FILE *outputFile) {
     fprintf(outputFile, "\n");
 }
 
-void printExecutionNode(ExecutionNode *father, ExecutionNode *child, FILE *outputFile) {
+void printExecutionNode(ExecutionNode *father, ExecutionNode *child, FILE *outputFile, char *relationName) {
     fprintf(outputFile, "node%d", father->id);
     fprintf(outputFile, "([");
     fprintf(outputFile, "Text: %s", father->text);
     fprintf(outputFile, "])");
-    fprintf(outputFile, " --> ");
+    fprintf(outputFile, " --%s--> ", relationName);
     fprintf(outputFile, "node%d", child->id);
     fprintf(outputFile, "([");
     fprintf(outputFile, "Text: %s", child->text);
@@ -564,21 +564,25 @@ void printExecutionGraphNodeToFile(ExecutionNode *executionNode, FILE *outputOpe
     }
 
     if (executionNode->operationTree) {
-        printNode(executionNode->operationTree, outputOperationTreesFile);
+        char linkedExecutionNodeId[1024];
+        sprintf(linkedExecutionNodeId, "%d", executionNode->id);
+        TreeNode *linkedExecutionNode = mallocTreeNode("linked execution node id", linkedExecutionNodeId, 1);
+        linkedExecutionNode->childNodes[0] = executionNode->operationTree;
+        printNode(linkedExecutionNode, outputOperationTreesFile);
     }
 
     ExecutionNode *definitely = executionNode->definitely;
     if (definitely) {
         printExecutionGraphNodeToFile(definitely, outputOperationTreesFile, outputExecutionFile);
 
-        printExecutionNode(executionNode, definitely, outputExecutionFile);
+        printExecutionNode(executionNode, definitely, outputExecutionFile, "definitely");
     }
 
     ExecutionNode *conditionally = executionNode->conditionally;
     if (conditionally) {
         printExecutionGraphNodeToFile(conditionally, outputOperationTreesFile, outputExecutionFile);
 
-        printExecutionNode(executionNode, conditionally, outputExecutionFile);
+        printExecutionNode(executionNode, conditionally, outputExecutionFile, "conditionally");
     }
 }
 
