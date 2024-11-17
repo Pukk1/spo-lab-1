@@ -224,6 +224,7 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
             node->childNodes[1] = mallocTreeNode("MINUS", NULL, 2);
         }
         node->childNodes[1]->childNodes[0] = mallocTreeNode(NULL, "const: 1", 0);
+        node->childNodes[1]->childNodes[1] = operationTreeNode(parsingTree->childNodes[0], funCalls);
     } else if (!strcmp(parsingTree->type, "callOrIndexer")) {
         char executionName[1024];
         sprintf(executionName,
@@ -283,19 +284,19 @@ char *expressionNodeToString(TreeNode *treeNode) {
         return mallocString(treeNode->value);
     } else if (treeNode->childrenNumber == 1) {
         char *childStr = expressionNodeToString(treeNode->childNodes[0]);
-        char exceptionText[1024];
-        sprintf(exceptionText,
-                "%s(%s)",
+        char text[1024];
+        sprintf(text,
+                "%s-%s-",
                 treeNode->type, childStr);
-        return mallocString(treeNode->value);
+        return mallocString(text);
     } else {
         char *childLeftStr = expressionNodeToString(treeNode->childNodes[0]);
         char *childRightStr = expressionNodeToString(treeNode->childNodes[1]);
-        char exceptionText[1024];
-        sprintf(exceptionText,
+        char text[1024];
+        sprintf(text,
                 "%s %s %s",
                 childLeftStr, treeNode->type, childRightStr);
-        return mallocString(treeNode->value);
+        return mallocString(text);
     }
 }
 
@@ -502,9 +503,16 @@ void printNode(TreeNode *node, FILE *outputFile) {
         printNode(node->childNodes[i], outputFile);
         fprintf(outputFile, "node%d", node->id);
         fprintf(outputFile, "([");
-        fprintf(outputFile, "Type: %s", node->type);
+        int typeExists = 0;
+        if (node->type != NULL && strlen(node->type) > 0) {
+            fprintf(outputFile, "Type: %s", node->type);
+            typeExists = 1;
+        }
         if (node->value != NULL && strlen(node->value) > 0) {
-            fprintf(outputFile, ", Value: %s", node->value);
+            if (typeExists) {
+                fprintf(outputFile, ", ", node->value);
+            }
+            fprintf(outputFile, "Value: %s", node->value);
         }
         fprintf(outputFile, "])");
 
@@ -512,9 +520,16 @@ void printNode(TreeNode *node, FILE *outputFile) {
         fprintf(outputFile, " --> ");
         fprintf(outputFile, "node%d", childNode->id);
         fprintf(outputFile, "([");
-        fprintf(outputFile, "Type: %s", childNode->type);
+        typeExists = 0;
+        if (childNode->type != NULL && strlen(childNode->type) > 0) {
+            fprintf(outputFile, "Type: %s", childNode->type);
+            typeExists = 1;
+        }
         if (childNode->value != NULL && strlen(childNode->value) > 0) {
-            fprintf(outputFile, ", Value: %s", childNode->value);
+            if (typeExists) {
+                fprintf(outputFile, ", ");
+            }
+            fprintf(outputFile, "Value: %s", childNode->value);
         }
         fprintf(outputFile, "])");
         fprintf(outputFile, "\n");

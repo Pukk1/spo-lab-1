@@ -50,9 +50,9 @@ int main(int argc, char *argv[]) {
                         basename(funExecution->filename), funExecution->name);
                 FILE *outputOperationTreesFile = fopen(outputOperationTreesFileName, "w");
                 char outputExecutionFileName[1024];
-                sprintf(outputExecutionFileName, "%s/%s.%s.ext-operation-tree.txt", argv[1],
+                sprintf(outputExecutionFileName, "%s/%s.%s.ext", argv[1],
                         basename(funExecution->filename), funExecution->name);
-                FILE *outputExecutionFile = fopen(outputOperationTreesFileName, "w");
+                FILE *outputExecutionFile = fopen(outputExecutionFileName, "w");
 
                 printExecution(funExecution, outputFunCallFile, outputOperationTreesFile, outputExecutionFile);
 
