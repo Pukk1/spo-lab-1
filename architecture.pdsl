@@ -15,18 +15,192 @@ architecture spo309681 {
     instructions:
         encode imm16 field = immediate [16];
 
-        instruction load = { 00000001, imm16 as ptr } {
-            ram:1[10] = ram:1[ptr];
+        instruction push = { 0000 0000 0000 0001, imm16 as value } {
+            SP = SP - 2;
+            ram:1[SP] = value;
+            IP = IP + 4;
+        };
+
+        instruction pop = { 0000 0000 0000 0010 } {
+            SP = SP + 2;
             IP = IP + 2;
         };
 
-        instruction init = { 11111110 } {
-            SP = 0xFFFF;
+        instruction push_from = { 0000 0000 0000 0011, imm16 as addr } {
+            SP = SP - 2;
+            ram:1[SP] = ram:1[addr];
+            IP = IP + 4;
         };
 
-        instruction hlt = { 11111111 } {};
+        instruction add = { 0000 0000 0001 0000 } {
+            let a = ram:1[SP] + (ram:1[SP+1] << 8);
+            SP = SP + 2;
+            let b = ram:1[SP] + (ram:1[SP+1] << 8);
+            let value = a + b;
+            ram:1[SP] = value;
+            ram:1[SP + 1] = value >> 8;
+            IP = IP + 2;
+        };
+
+        instruction sub = { 0000 0000 0010 0000 } {
+            let b = ram:1[SP] + (ram:1[SP+1] << 8);
+            SP = SP + 2;
+            let a = ram:1[SP] + (ram:1[SP+1] << 8);
+            let value = a - b;
+            ram:1[SP] = value;
+            ram:1[SP+1] = value >> 8;
+            IP = IP + 2;
+        };
+
+        instruction mul = { 0000 0000 0011 0000 } {
+            let a = ram:1[SP] + (ram:1[SP+1] << 8);
+            SP = SP + 2;
+            let b = ram:1[SP] + (ram:1[SP+1] << 8);
+            let value = a * b;
+            ram:1[SP] = value;
+            ram:1[SP+1] = value >> 8;
+            IP = IP + 2;
+        };
+
+        instruction div = { 0000 0000 0100 0000 } {
+            let b = ram:1[SP] + (ram:1[SP+1] << 8);
+            SP = SP + 2;
+            let a = ram:1[SP] + (ram:1[SP+1] << 8);
+            let value = a / b;
+            ram:1[SP] = value;
+            ram:1[SP+1] = value >> 8;
+            IP = IP +2;
+        };
+
+        instruction op_and = { 0000 0000 0101 0000 } {
+            let a = ram:1[SP] + (ram:1[SP+1] << 8);
+            SP = SP + 2;
+            let b = ram:1[SP] + (ram:1[SP+1] << 8);
+            let value = a & b;
+            ram:1[SP] = value;
+            ram:1[SP+1] = value >> 8;
+            IP = IP + 2;
+        };
+
+        instruction op_or = { 0000 0000 0110 0000 } {
+            let a = ram:1[SP] + (ram:1[SP+1] << 8);
+            SP = SP + 2;
+            let b = ram:1[SP] + (ram:1[SP+1] << 8);
+            let value = a | b;
+            ram:1[SP] = value;
+            ram:1[SP+1] = value >> 8;
+            IP = IP + 1;
+        };
+
+        instruction lt = { 0000 0000 0111 0000 } {
+            let a = ram:1[SP] + (ram:1[SP+1] << 8);
+            SP = SP + 2;
+            let b = ram:1[SP] + (ram:1[SP+1] << 8);
+            if (a < b) then ram[SP] = 1; else ram[SP] = 0;
+            ram:1[SP+1] = 0;
+            IP = IP +1;
+        };
+
+        instruction lte = { 0000 0000 1000 0000 } {
+            let a = ram:1[SP] + (ram:1[SP+1] << 8);
+            SP = SP + 2;
+            let b = ram:1[SP] + (ram:1[SP+1] << 8);
+            if (a <= b) then ram[SP] = 1; else ram[SP] = 0;
+            ram:1[SP+1] = 0;
+            IP = IP +1;
+        };
+
+        instruction gt = { 0000 0000 1001 0000 } {
+            let a = ram:1[SP] + (ram:1[SP+1] << 8);
+            SP = SP + 2;
+            let b = ram:1[SP] + (ram:1[SP+1] << 8);
+            if (a > b) then ram:1[SP] = 1; else ram:1[SP] = 0;
+            ram:1[SP+1] = 0;
+            IP = IP + 1;
+        };
+
+        instruction gte = { 0000 0000 1010 0000 } {
+            let a = ram:1[SP] + (ram:1[SP+1] << 8);
+            SP = SP + 2;
+            let b = ram:1[SP] + (ram:1[SP+1] << 8);
+            if (a >= b) then ram[SP] = 1; else ram[SP] = 0;
+            ram:1[SP+1] = 0;
+            IP = IP +1;
+        };
+
+        instruction eq = { 0000 0000 1011 0000 } {
+            let a = ram:1[SP] + (ram:1[SP+1] << 8);
+            SP = SP + 2;
+            let b = ram:1[SP] + (ram:1[SP+1] << 8);
+            if (a == b) then ram[SP] = 1; else ram[SP] = 0;
+            ram:1[SP+1] = 0;
+            IP = IP +1;
+        };
+
+        instruction neq = { 0000 0000 1100 0000 } {
+            let a = ram:1[SP] + (ram:1[SP+1] << 8);
+            SP = SP + 2;
+            let b = ram:1[SP] + (ram:1[SP+1] << 8);
+            if (a != b) then ram[SP] = 1; else ram[SP] = 0;
+            ram:1[SP+1] = 0;
+            IP = IP +1;
+        };
+
+        instruction jz = { 0000 0001 0000 0000, imm16 as addr } {
+            if (ram:1[SP] + (ram:1[SP+1] << 8) == 0) then IP = addr; else IP = IP + 4;
+            SP = SP + 2;
+        };
+
+        instruction jnz = { 0000 0010 0000 0000, imm16 as addr } {
+            if (ram:1[SP] + (ram:1[SP+1] << 8) != 0) then IP = addr; else IP = IP + 4;
+            SP = SP + 2;
+        };
+
+        instruction jmp = { 0000 0011 0000 0000, imm16 as addr } {
+            IP = addr;
+        };
+
+        instruction call = { 0001 0000 0000 0000, imm16 as addr } {
+            SP = SP - 2;
+            ram:1[SP] = IP + 4;
+            ram:1[SP+1] = (IP + 4) >> 8;
+            IP = addr;
+        };
+
+        instruction ret = { 0010 0000 0000 0000 } {
+            let value = ram:1[SP] + (ram:1[SP+1] << 8);
+            SP = SP + 2;
+            IP = ram:1[SP] + (ram:1[SP+1] << 8);
+            ram:1[SP] = value;
+            ram:1[SP+1] = value >> 8;
+        };
+
+        instruction hlt = { 1111 1111 1111 1111 } {};
 
     mnemonics:
+        mnemonic PUSH for push(value) "{1}";
+        mnemonic POP for pop();
+        mnemonic PUSH_FROM for push_from(addr) "{1}";
+
+        mnemonic ADD for add();
+        mnemonic SUB for sub();
+        mnemonic MUL for mul();
+        mnemonic DIV for div();
+        mnemonic BIT_AND for op_and();
+        mnemonic OR for op_or();
+        mnemonic LT for lt();
+        mnemonic LTE for lte();
+        mnemonic GT for gt();
+        mnemonic GTE for gte();
+        mnemonic EQ for eq();
+        mnemonic NEQ for neq();
+
+        mnemonic JZ for jz(addr) "{1}";
+        mnemonic JNZ for jnz(addr) "{1}";
+        mnemonic JMP for jmp(addr) "{1}";
+
+        mnemonic CALL for call(addr) "{1}";
+        mnemonic RET for ret();
+
         mnemonic HLT for hlt();
-        mnemonic LOAD for load(ptr) "{1}";
 }
