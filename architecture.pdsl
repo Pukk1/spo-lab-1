@@ -1,4 +1,4 @@
-architecture StackVM {
+architecture spo309681 {
 
     registers:
         storage SP[16]; /* Стековый указатель */
@@ -16,8 +16,7 @@ architecture StackVM {
         encode imm16 field = immediate [16];
 
         instruction load = { 00000001, imm16 as ptr } {
-            SP = SP - 1;
-            ram:1[SP] = ram:1[ptr];
+            ram:1[10] = ram:1[ptr];
             IP = IP + 2;
         };
 
@@ -29,6 +28,5 @@ architecture StackVM {
 
     mnemonics:
         mnemonic HLT for hlt();
-        mnemonic INIT for init();
         mnemonic LOAD for load(ptr) "{1}";
 }
