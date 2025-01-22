@@ -1,0 +1,22 @@
+architecture StackVM {
+
+    registers:
+        storage SP[16]; /* Стековый указатель */
+        storage IP[16]; /* Указатель на текущую инструкцию */
+        storage IO_PORT[16]; /* Порт ввода-вывода */
+
+    memory:
+        range ram [0x0000..0xFFFF] {
+            cell = 16;
+            endianess = little-endian;
+            granularity = 0;
+        }
+
+    instructions:
+        encode imm16 field = immediate [16];
+
+        instruction hlt = { 11110000 } {};
+
+    mnemonics:
+        mnemonic HLT for hlt();
+}
