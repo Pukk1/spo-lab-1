@@ -1,0 +1,4 @@
+.\Portable.RemoteTasks.Manager.exe -ul u309681 -up f2576807-fc0e-47c5-a628-a461d1118e78 -w -id -s Assemble definitionFile architecture archName StackVM asmListing .\output\test-list
+.\Portable.RemoteTasks.Manager.exe -ul u309681 -up f2576807-fc0e-47c5-a628-a461d1118e78 -g 67fa552c-8939-45c7-9664-540ba8f4b444
+.\Portable.RemoteTasks.Manager.exe -ul u309681 -up f2576807-fc0e-47c5-a628-a461d1118e78 -g 26ac5f6c-bea2-4b11-a696-d315d1551118 -r out.ptptb > binary.ptptb
+.\Portable.RemoteTasks.Manager.exe -ul u309681 -up f2576807-fc0e-47c5-a628-a461d1118e78 -il -s ExecuteBinary definitionFile architecture archName StackVM binaryFileToRun binary.ptptb codeRamBankName ram ipRegStorageName IP finishMnemonicName HLT
