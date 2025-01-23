@@ -36,20 +36,20 @@ architecture spo309681 {
 
         instruction load_bp = { 0000 0000 0000 0100, imm64 as shift } {
             SP = SP - 8;
-            ram:8[SP] = ram:8[BP - shift];
+            ram:8[SP] = ram:8[BP - 8 - shift * 8];
             IP = IP + 10;
         };
 
-        instruction save_bp = { 0000 0000 0000 0101, imm64 as shift } {
-            ram:8[BP - shift] = ram:8[SP];
-            SP = SP + 8;
-            IP = IP + 10;
-        };
-
-        instruction load = { 0000 0000 0000 0110 } {
+        instruction load = { 0000 0000 0000 0101 } {
             let addr = ram:8[SP];
             ram:8[SP] = ram:8[addr];
             IP = IP + 2;
+        };
+
+        instruction save_bp = { 0000 0000 0000 0110, imm64 as shift } {
+            ram:8[BP - 8 - shift * 8] = ram:8[SP];
+            SP = SP + 8;
+            IP = IP + 10;
         };
 
         instruction save = { 0000 0000 0000 0111 } {
