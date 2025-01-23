@@ -4,7 +4,7 @@ architecture spo309681 {
         storage SP[16]; /* Стековый указатель */
         storage IP[16]; /* Указатель на текущую инструкцию */
         storage BP[16]; /* Указатель на базовый адрес фрейма стека */
-        storage IO_PORT[16]; /* Порт ввода-вывода */
+        storage IO_PORT[64]; /* Порт ввода-вывода */
 
     memory:
         range ram [0x0000..0xFFFF] {
@@ -14,183 +14,177 @@ architecture spo309681 {
         }
 
     instructions:
-        encode imm16 field = immediate [16];
+        encode imm64 field = immediate [64];
 
-        instruction push = { 0000 0000 0000 0001, imm16 as value } {
-            SP = SP - 2;
-            ram[SP+1] = value;
-            ram[SP] = (value >> 8);
-            IP = IP + 4;
+        instruction push = { 0000 0000 0000 0001, imm64 as value } {
+            SP = SP - 8;
+            ram:8[SP] = value;
+            IP = IP + 10;
         };
 
         instruction pop = { 0000 0000 0000 0010 } {
-            SP = SP + 2;
+            SP = SP + 8;
             IP = IP + 2;
         };
 
-        instruction load_const = { 0000 0000 0000 0011, imm16 as addr } {
-            SP = SP - 2;
-            ram[SP] = ram[addr];
-            ram[SP+1] = ram[addr+1];
-            IP = IP + 4;
+        instruction load_const = { 0000 0000 0000 0011, imm64 as addr } {
+            SP = SP - 8;
+            ram:8[SP] = ram:8[addr];
+            IP = IP + 10;
         };
 
-        instruction load = { 0000 0000 0000 0100, imm16 as shift } {
-            SP = SP - 2;
-            ram[SP] = ram[BP-shift];
-            ram[SP+1] = ram[BP-shift+1];
-            IP = IP + 4;
+        instruction load = { 0000 0000 0000 0100, imm64 as shift } {
+            SP = SP - 8;
+            ram:8[SP] = ram:8[BP - shift];
+            IP = IP + 10;
         };
 
-        instruction save = { 0000 0000 0000 0101, imm16 as shift } {
-            ram[BP-shift] = ram[SP];
-            ram[BP-shift+1] = ram[SP+1];
-            SP = SP + 2;
-            IP = IP + 4;
+        instruction save = { 0000 0000 0000 0101, imm64 as shift } {
+            ram:8[BP - shift] = ram:8[SP];
+            SP = SP + 8;
+            IP = IP + 10;
         };
 
         instruction add = { 0000 0000 0001 0000 } {
-            let a = (ram[SP] << 8) + ram[SP+1];
-            SP = SP + 2;
-            let b = (ram[SP] << 8) + ram[SP+1];
+            let a = ram:8[SP];
+            SP = SP + 8;
+            let b = ram:8[SP];
             let value = a + b;
-            ram[SP+1] = value;
-            ram[SP] = (value >> 8);
+            ram:8[SP] = value;
             IP = IP + 2;
         };
 
         instruction sub = { 0000 0000 0010 0000 } {
-            let b = (ram[SP] << 8) + ram[SP+1];
-            SP = SP + 2;
-            let a = (ram[SP] << 8) + ram[SP+1];
+            let b = ram:8[SP];
+            SP = SP + 8;
+            let a = ram:8[SP];
             let value = a - b;
-            ram[SP+1] = value;
-            ram[SP] = (value >> 8);
+            ram:8[SP] = value;
             IP = IP + 2;
         };
 
         instruction mul = { 0000 0000 0011 0000 } {
-            let a = (ram[SP] << 8) + ram[SP+1];
-            SP = SP + 2;
-            let b = (ram[SP] << 8) + ram[SP+1];
+            let a = ram:8[SP];
+            SP = SP + 8;
+            let b = ram:8[SP];
             let value = a * b;
-            ram[SP+1] = value;
-            ram[SP] = (value >> 8);
+            ram:8[SP] = value;
             IP = IP + 2;
         };
 
         instruction div = { 0000 0000 0100 0000 } {
-            let b = (ram[SP] << 8) + ram[SP+1];
-            SP = SP + 2;
-            let a = (ram[SP] << 8) + ram[SP+1];
+            let b = ram:8[SP];
+            SP = SP + 8;
+            let a = ram:8[SP];
             let value = a / b;
-            ram[SP+1] = value;
-            ram[SP] = (value >> 8);
+            ram:8[SP] = value;
             IP = IP + 2;
         };
 
         instruction op_and = { 0000 0000 0101 0000 } {
-            let a = (ram[SP] << 8) + ram[SP+1];
-            SP = SP + 2;
-            let b = (ram[SP] << 8) + ram[SP+1];
+            let a = ram:8[SP];
+            SP = SP + 8;
+            let b = ram:8[SP];
             let value = a & b;
-            ram[SP+1] = value;
-            ram[SP] = (value >> 8);
+            ram:8[SP] = value;
             IP = IP + 2;
         };
 
         instruction op_or = { 0000 0000 0110 0000 } {
-            let a = (ram[SP] << 8) + ram[SP+1];
-            SP = SP + 2;
-            let b = (ram[SP] << 8) + ram[SP+1];
+            let a = ram:8[SP];
+            SP = SP + 8;
+            let b = ram:8[SP];
             let value = a | b;
-            ram[SP+1] = value;
-            ram[SP] = (value >> 8);
+            ram:8[SP] = value;
             IP = IP + 2;
         };
 
         instruction lt = { 0000 0000 0111 0000 } {
-            let a = (ram[SP] << 8) + ram[SP+1];
-            SP = SP + 2;
-            let b = (ram[SP] << 8) + ram[SP+1];
-            if (a < b) then ram[SP+1] = 1; else ram[SP+1] = 0;
-            ram[SP] = 0;
+            let a = ram:8[SP];
+            SP = SP + 8;
+            let b = ram:8[SP];
+            if (a < b) then ram:8[SP] = 1; else ram:8[SP] = 0;
+            ram:8[SP] = 0;
             IP = IP + 2;
         };
 
         instruction lte = { 0000 0000 1000 0000 } {
-            let a = (ram[SP] << 8) + ram[SP+1];
-            SP = SP + 2;
-            let b = (ram[SP] << 8) + ram[SP+1];
-            if (a <= b) then ram[SP+1] = 1; else ram[SP+1] = 0;
-            ram[SP] = 0;
+            let a = ram:8[SP];
+            SP = SP + 8;
+            let b = ram:8[SP];
+            if (a <= b) then ram:8[SP] = 1; else ram:8[SP] = 0;
+            ram:8[SP] = 0;
             IP = IP + 2;
         };
 
         instruction gt = { 0000 0000 1001 0000 } {
-            let a = (ram[SP] << 8) + ram[SP+1];
-            SP = SP + 2;
-            let b = (ram[SP] << 8) + ram[SP+1];
-            if (a > b) then ram[SP+1] = 1; else ram[SP+1] = 0;
-            ram[SP] = 0;
+            let a = ram:8[SP];
+            SP = SP + 8;
+            let b = ram:8[SP];
+            if (a > b) then ram:8[SP] = 1; else ram:8[SP] = 0;
+            ram:8[SP] = 0;
             IP = IP + 2;
         };
 
         instruction gte = { 0000 0000 1010 0000 } {
-            let a = (ram[SP] << 8) + ram[SP+1];
-            SP = SP + 2;
-            let b = (ram[SP] << 8) + ram[SP+1];
-            if (a >= b) then ram[SP+1] = 1; else ram[SP+1] = 0;
-            ram[SP] = 0;
+            let a = ram:8[SP];
+            SP = SP + 8;
+            let b = ram:8[SP];
+            if (a >= b) then ram:8[SP] = 1; else ram:8[SP] = 0;
+            ram:8[SP] = 0;
             IP = IP + 2;
         };
 
         instruction eq = { 0000 0000 1011 0000 } {
-            let a = (ram[SP] << 8) + ram[SP+1];
-            SP = SP + 2;
-            let b = (ram[SP] << 8) + ram[SP+1];
-            if (a == b) then ram[SP+1] = 1; else ram[SP+1] = 0;
-            ram[SP] = 0;
+            let a = ram:8[SP];
+            SP = SP + 8;
+            let b = ram:8[SP];
+            if (a == b) then ram:8[SP] = 1; else ram:8[SP] = 0;
+            ram:8[SP] = 0;
             IP = IP + 2;
         };
 
         instruction neq = { 0000 0000 1100 0000 } {
-            let a = (ram[SP] << 8) + ram[SP+1];
-            SP = SP + 2;
-            let b = (ram[SP] << 8) + ram[SP+1];
-            if (a != b) then ram[SP+1] = 1; else ram[SP+1] = 0;
-            ram[SP] = 0;
+            let a = ram:8[SP];
+            SP = SP + 8;
+            let b = ram:8[SP];
+            if (a != b) then ram:8[SP] = 1; else ram:8[SP] = 0;
+            ram:8[SP] = 0;
             IP = IP + 2;
         };
 
-        instruction jz = { 0000 0001 0000 0000, imm16 as addr } {
-            if ((ram[SP] << 8) + ram[SP+1] == 0) then IP = addr; else IP = IP + 4;
-            SP = SP + 2;
+        instruction jz = { 0000 0001 0000 0000, imm64 as addr } {
+            if (ram:8[SP] == 0) then IP = addr; else IP = IP + 10;
+            SP = SP + 8;
         };
 
-        instruction jnz = { 0000 0010 0000 0000, imm16 as addr } {
-            if ((ram[SP] << 8) + ram[SP+1] != 0) then IP = addr; else IP = IP + 4;
-            SP = SP + 2;
+        instruction jnz = { 0000 0010 0000 0000, imm64 as addr } {
+            if (ram:8[SP] != 0) then IP = addr; else IP = IP + 10;
+            SP = SP + 8;
         };
 
-        instruction jmp = { 0000 0011 0000 0000, imm16 as addr } {
+        instruction jmp = { 0000 0011 0000 0000, imm64 as addr } {
             IP = addr;
         };
 
-        instruction call = { 0001 0000 0000 0000, imm16 as addr } {
-            SP = SP - 2;
+        instruction call = { 0001 0000 0000 0000, imm64 as addr } {
+            SP = SP - 8;
             BP = SP;
-            ram[SP+1] = IP + 4;
-            ram[SP] = ((IP + 4) >> 8);
+            ram:8[SP] = IP + 10;
             IP = addr;
         };
 
-        instruction ret = { 0010 0000 0000 0000 } {
-            let value = (ram[SP] << 8) + ram[SP+1];
+        instruction ret = { 0010 0000 0000 0000, imm64 as arg_number, imm64 as returned } {
             SP = BP;
-            IP = (ram[SP] << 8) + ram[SP+1];
-            ram[SP+1] = value;
-            ram[SP] = (value >> 8);
+            IP = ram:8[SP];
+            SP = SP + 8;
+            SP = SP + arg_number * 8;
+            SP = SP - 8;
+            if returned == 1 then {
+                ram:8[SP] = ram:8[BP - 8];
+            } else {
+                ram:8[SP] = 0;
+            }
         };
 
         instruction hlt = { 1111 1111 1111 1111 } {};
@@ -220,7 +214,7 @@ architecture spo309681 {
         mnemonic JMP for jmp(addr) "{1}";
 
         mnemonic CALL for call(addr) "{1}";
-        mnemonic RET for ret();
+        mnemonic RET for ret(arg_number, returned) "{1},{2}";
 
         mnemonic HLT for hlt();
 }

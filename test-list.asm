@@ -1,14 +1,16 @@
 [section ram]
-JMP main
+PUSH 1
+PUSH 2
+PUSH 3
 CALL main
+POP
 HLT
-const1:dw 1
-const2:dw 2
+const1:dw 0,0,0,1
+const2:dw 0,0,0,2
 main:
-PUSH_FROM const1
-PUSH_FROM const2
+LOAD_CONST const1
+LOAD_CONST const2
 ADD
 PUSH 3
 MUL
-POP
-RET
+RET 3,1
