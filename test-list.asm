@@ -1,7 +1,9 @@
 [section ram]
-PUSH 1
-PUSH 2
-PUSH 3
+INIT code_end_addr
+ALLOC 8
+PUSH 7
+SAVE
+LOAD
 CALL main
 POP
 HLT
@@ -14,3 +16,4 @@ ADD
 PUSH 3
 MUL
 RET 3,1
+code_end_addr:

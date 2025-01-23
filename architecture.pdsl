@@ -4,6 +4,7 @@ architecture spo309681 {
         storage SP[16]; /* Стековый указатель */
         storage IP[16]; /* Указатель на текущую инструкцию */
         storage BP[16]; /* Указатель на базовый адрес фрейма стека */
+        storage HP[16]; /* Указатель на кучу */
         storage IO_PORT[64]; /* Порт ввода-вывода */
 
     memory:
@@ -33,16 +34,30 @@ architecture spo309681 {
             IP = IP + 10;
         };
 
-        instruction load = { 0000 0000 0000 0100, imm64 as shift } {
+        instruction load_bp = { 0000 0000 0000 0100, imm64 as shift } {
             SP = SP - 8;
             ram:8[SP] = ram:8[BP - shift];
             IP = IP + 10;
         };
 
-        instruction save = { 0000 0000 0000 0101, imm64 as shift } {
+        instruction save_bp = { 0000 0000 0000 0101, imm64 as shift } {
             ram:8[BP - shift] = ram:8[SP];
             SP = SP + 8;
             IP = IP + 10;
+        };
+
+        instruction load = { 0000 0000 0000 0110 } {
+            let addr = ram:8[SP];
+            ram:8[SP] = ram:8[addr];
+            IP = IP + 2;
+        };
+
+        instruction save = { 0000 0000 0000 0111 } {
+            let value = ram:8[SP];
+            SP = SP + 8;
+            let addr = ram:8[SP];
+            ram:8[addr] = value;
+            IP = IP + 2;
         };
 
         instruction add = { 0000 0000 0001 0000 } {
@@ -187,14 +202,28 @@ architecture spo309681 {
             }
         };
 
+        instruction alloc = { 1110 0000 0000 0000, imm64 as byte_size } {
+            SP = SP - 8;
+            ram:8[SP] = HP;
+            HP = HP + byte_size;
+            IP = IP + 10;
+        };
+
+        instruction init = { 1111 0000 0000 0000, imm64 as code_end_addr } {
+            HP = code_end_addr;
+            IP = IP + 10;
+        };
+
         instruction hlt = { 1111 1111 1111 1111 } {};
 
     mnemonics:
         mnemonic PUSH for push(value) "{1}";
         mnemonic POP for pop();
         mnemonic LOAD_CONST for load_const(addr) "{1}";
-        mnemonic LOAD for load(shift) "{1}";
-        mnemonic SAVE for save(shift) "{1}";
+        mnemonic LOAD_BP for load_bp(shift) "{1}";
+        mnemonic SAVE_BP for save_bp(shift) "{1}";
+        mnemonic LOAD for load();
+        mnemonic SAVE for save();
 
         mnemonic ADD for add();
         mnemonic SUB for sub();
@@ -216,5 +245,7 @@ architecture spo309681 {
         mnemonic CALL for call(addr) "{1}";
         mnemonic RET for ret(arg_number, returned) "{1},{2}";
 
+        mnemonic ALLOC for alloc(byte_size) "{1}";
+        mnemonic INIT for init(code_end_addr) "{1}";
         mnemonic HLT for hlt();
 }
