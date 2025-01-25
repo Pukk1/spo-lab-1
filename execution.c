@@ -172,7 +172,18 @@ ExecutionNode *executionVarNode(TreeNode *treeNode, ExecutionNode *nextNode,
         sprintf(varNameAndType,
                 "AS %s %s",
                 ((TreeNode *) variablesList.elements[i])->value, resultNodeType);
-        previous->definitely = initExecutionNode(varNameAndType);
+        ExecutionNode *initNode = initExecutionNode(varNameAndType);
+        TreeNode *initOperationTreeNode = mallocTreeNode("AS", NULL, 2);
+        initNode->operationTree = initOperationTreeNode;
+        sprintf(varNameAndType,
+                "%s",
+                resultNodeType);
+        initOperationTreeNode->childNodes[0] = mallocTreeNode(NULL, varNameAndType, 0);
+        sprintf(varNameAndType,
+                "%s",
+                ((TreeNode *) variablesList.elements[i])->value);
+        initOperationTreeNode->childNodes[1] = mallocTreeNode(NULL, varNameAndType, 0);
+        previous->definitely = initNode;
         previous = previous->definitely;
     }
     previous->definitely = nextNode;
