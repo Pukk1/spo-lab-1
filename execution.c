@@ -170,7 +170,7 @@ ExecutionNode *executionVarNode(TreeNode *treeNode, ExecutionNode *nextNode,
     for (int i = 0; i < variablesList.nextPosition; ++i) {
         char varNameAndType[1024];
         sprintf(varNameAndType,
-                "%s AS %s",
+                "AS %s %s",
                 ((TreeNode *) variablesList.elements[i])->value, resultNodeType);
         previous->definitely = initExecutionNode(varNameAndType);
         previous = previous->definitely;
@@ -413,15 +413,19 @@ ExecutionNode *executionNode(TreeNode *treeNode, ExecutionNode *nextNode,
 ExecutionNode *functionArgsExecutionNode(TreeNode *functionSignatureNode, ExecutionNode *nextNode,
                                          ExecutionNode *breakNode, FunCalls *funCalls) {
     ExecutionNode *node = initExecutionNode("");
-    if (functionSignatureNode->childrenNumber == 1) {
+    node->definitely = nextNode;
+    if (functionSignatureNode->childrenNumber > 0 &&
+        !strcmp(functionSignatureNode->childNodes[0]->type, "listArgDef")) {
         Array args = findListItemsUtil(functionSignatureNode->childNodes[0]);
         ExecutionNode *parentNode = node;
         for (int i = 0; i < args.nextPosition; ++i) {
             TreeNode *argDef = args.elements[i];
             char argText[1024];
-            sprintf(argText, "%s AS %s", argDef->childNodes[0]->value, argDef->childNodes[1]->value);
-            parentNode->definitely = initExecutionNode(argText);
-            parentNode = parentNode->definitely;
+            sprintf(argText, "AS %s %s", argDef->childNodes[0]->value, argDef->childNodes[1]->value);
+            ExecutionNode *newDimNode = initExecutionNode(argText);
+            newDimNode->definitely = parentNode->definitely;
+            parentNode->definitely = newDimNode;
+            parentNode = newDimNode;
         }
         parentNode->definitely = nextNode;
     }
