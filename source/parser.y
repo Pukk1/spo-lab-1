@@ -11,7 +11,7 @@
     TreeNode* node;
 }
 
-%token <node> PLUS MINUS MUL SLASH PERCENT SET NOTEQUAL EQUALITY
+%token <node> SUM SUB MUL DIV SLASH PERCENT SET NOTEQUAL EQUALITY
 %token <node> LESSTHAN GREATERTHAN LESSTHANEQ GREATERTHANEQ
 %token <node> AND OR NOT
 %token <node> DECREMENT INCREMENT
@@ -42,9 +42,9 @@
 
 %left LESSTHAN GREATERTHAN LESSTHANEQ GREATERTHANEQ
 
-%left PLUS MINUS
+%left SUM SUB
 
-%left MUL SLASH PERCENT
+%left MUL DIV SLASH PERCENT
 
 %left INCREMENT DECREMENT
 
@@ -165,9 +165,10 @@ expr: unary                 {{$$ = $1;}}
     | literal               {{$$ = $1;}};
 
 binary: expr SET expr     {{TreeNode* elements[] = {$1, $3};$$ = createNode("SET", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
-    | expr PLUS expr        {{TreeNode* elements[] = {$1, $3};$$ = createNode("PLUS", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
-    | expr MINUS expr       {{TreeNode* elements[] = {$1, $3};$$ = createNode("MINUS", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | expr SUM expr        {{TreeNode* elements[] = {$1, $3};$$ = createNode("SUM", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | expr SUB expr       {{TreeNode* elements[] = {$1, $3};$$ = createNode("SUB", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
     | expr MUL expr        {{TreeNode* elements[] = {$1, $3};$$ = createNode("MUL", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | expr DIV expr        {{TreeNode* elements[] = {$1, $3};$$ = createNode("DIV", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
     | expr SLASH expr       {{TreeNode* elements[] = {$1, $3};$$ = createNode("SLASH", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
     | expr PERCENT expr     {{TreeNode* elements[] = {$1, $3};$$ = createNode("PERCENT", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
     | expr EQUALITY expr {{TreeNode* elements[] = {$1, $3};$$ = createNode("EQUALITY", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}

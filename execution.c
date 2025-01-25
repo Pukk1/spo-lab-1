@@ -170,7 +170,7 @@ ExecutionNode *executionVarNode(TreeNode *treeNode, ExecutionNode *nextNode,
     for (int i = 0; i < variablesList.nextPosition; ++i) {
         char varNameAndType[1024];
         sprintf(varNameAndType,
-                "%s as %s",
+                "%s AS %s",
                 ((TreeNode *) variablesList.elements[i])->value, resultNodeType);
         previous->definitely = initExecutionNode(varNameAndType);
         previous = previous->definitely;
@@ -178,32 +178,6 @@ ExecutionNode *executionVarNode(TreeNode *treeNode, ExecutionNode *nextNode,
     previous->definitely = nextNode;
     return node;
 }
-
-//чтобы распарсить дерево операций в последовательность операций
-/*ExecutionNode *executionExpressionNode(TreeNode *treeNode, ExecutionNode *nextNode, ExecutionNode *conditionallyNext,
-                                       ExecutionNode *parentNode) {
-    ExecutionNode *node = initExecutionNode("");
-    int hasNewParent = 0;
-    if (parentNode == NULL) {
-        hasNewParent = 1;
-        parentNode = initExecutionNode("");
-    }
-    node->definitely = nextNode;
-    node->conditionally = conditionallyNext;
-    if (treeNode->childrenNumber == 2) {
-        ExecutionNode *leftNode = executionExpressionNode(treeNode->childNodes[0], NULL, NULL, parentNode);
-        ExecutionNode *rightNode = executionExpressionNode(treeNode->childNodes[1], node, NULL, leftNode);
-    } else if (treeNode->childrenNumber != 0 && !strcmp(treeNode->childNodes[0]->type, "braces")) {
-        executionExpressionNode(treeNode->childNodes[0], node, NULL, parentNode);
-    } else {
-        parentNode->definitely = node;
-    }
-    if (hasNewParent) {
-        return parentNode;
-    } else {
-        return node;
-    }
-}*/
 
 // для построения дерева операций
 TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
@@ -279,7 +253,6 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
 }
 
 char *expressionNodeToString(TreeNode *treeNode) {
-    // TODO("делать доп действия и создавать доп узлы для каждого конкретного типа node")
     if (treeNode->childrenNumber == 0) {
         return mallocString(treeNode->value);
     } else if (treeNode->childrenNumber == 1) {
@@ -294,7 +267,7 @@ char *expressionNodeToString(TreeNode *treeNode) {
         char *childRightStr = expressionNodeToString(treeNode->childNodes[1]);
         char text[1024];
         sprintf(text,
-                "%s %s %s",
+                "OP_TREE %s %s %s",
                 childLeftStr, treeNode->type, childRightStr);
         return mallocString(text);
     }
@@ -436,17 +409,38 @@ ExecutionNode *executionNode(TreeNode *treeNode, ExecutionNode *nextNode,
     }
 }
 
+// декларация аргументов функции
+ExecutionNode *functionArgsExecutionNode(TreeNode *functionSignatureNode, ExecutionNode *nextNode,
+                                         ExecutionNode *breakNode, FunCalls *funCalls) {
+    ExecutionNode *node = initExecutionNode("");
+    if (functionSignatureNode->childrenNumber == 1) {
+        Array args = findListItemsUtil(functionSignatureNode->childNodes[0]);
+        ExecutionNode *parentNode = node;
+        for (int i = 0; i < args.nextPosition; ++i) {
+            TreeNode *argDef = args.elements[i];
+            char argText[1024];
+            sprintf(argText, "%s AS %s", argDef->childNodes[0]->value, argDef->childNodes[1]->value);
+            parentNode->definitely = initExecutionNode(argText);
+            parentNode = parentNode->definitely;
+        }
+        parentNode->definitely = nextNode;
+    }
+    return node;
+}
+
 ExecutionNode *initGraph(TreeNode *sourceItem, FunCalls *funCalls) {
     ExecutionNode *startNode = initExecutionNode("START");
     ExecutionNode *endNode = initExecutionNode("FINISH");
     TreeNode *funcDef = sourceItem->childNodes[0];
+
+    ExecutionNode *listStatements = endNode;
     if (funcDef->childrenNumber == 2) {
-        ExecutionNode *listStatementNode =
+        listStatements =
                 executionNode(funcDef->childNodes[1], endNode, NULL, funCalls);
-        startNode->definitely = listStatementNode;
-    } else {
-        startNode->definitely = endNode;
     }
+    ExecutionNode *functionArgs =
+            functionArgsExecutionNode(funcDef->childNodes[0], listStatements, NULL, funCalls);
+    startNode->definitely = functionArgs;
     return startNode;
 }
 

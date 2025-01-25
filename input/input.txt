@@ -1,76 +1,40 @@
-function main3(arg1 as bool, arg2 as int, arg3 as bool) as bool(,,,)
-    ++a;
-    dim bbb as asd
-    1+1*fun(bbb, ccc);
-    dim a,b,c as uint()
-    dim d as string
-    dim as bool
-    a = 10;
-    (++a * 1 + fun()) + 1 == 10;
-    do
-        1+1;
-    loop while (1+1)-1+(1+2) == 2
-    do
-    loop while 3 == 2
-    do
-        break
-    loop until 2+2 == 4
-    if 1+(1-1) == 1 then
-        if 1 == 2 then
-            while (1+1 == 2)
-                break
-                a = 1+1;
-            wend
-
-        else
-            do loop while 1>2
-            do
-                dim a as int
-                a = b+c;
-            loop until 2 == 2
-            "str";
-            (a+b) %c;
-            asd; //just identifer and comment test
-        end if
-    end if
-    if 1 == 1 then
-    end if
+function sum(arg1 as int, arg2 as int) as int
+    arg1 + arg2;
 end function
 
-function main(arg1 as bool, arg2 as int, arg3 as bool) as bool(,,,)
-    dim bbb as asd
-    1+1*fun(bbb);
-    dim a,b,c as uint()
-    dim d as string
-    dim as bool
-    a = 10;
-    (++a * 1 + fun()) + 1 == 10;
-    do
-        1+1;
-    loop while (1+1)-1+(1+2) == 2
-    do
-    loop while 3 == 2
-    do
-        break
-    loop until 2+2 == 4
-    if 1+(1-1) == 1 then
-        if 1 == 2 then
-            while (1+1 == 2)
-                break
-                a = 1+1;
-            wend
+function sub(arg1 as int, arg2 as int) as int
+    arg1 - arg2;
+end function
 
-        else
-            do loop while 1>2
-            do
-                dim a as int
-                a = b+c;
-            loop until 2 == 2
-            "str";
-            (a+b) %c;
-            asd; //just identifer and comment test
+function mul(arg1 as int, arg2 as int) as int
+    arg1 * arg2;
+end function
+
+function div(arg1 as int, arg2 as int) as int
+    arg1 / arg2;
+end function
+
+function main(io as int)
+    dim a as int
+    dim b as int
+    dim op as int
+    dim res as int
+    while true
+        a = io;
+        b = io;
+        op = io;
+        if op == 1 then
+            res = sum(a, b);
         end if
-    end if
-    if 1 == 1 then
-    end if
+        if op == 2 then
+            res = sub(a, b);
+        end if
+        if op == 3 then
+            res = mul(a, b);
+        end if
+        if op == 4 then
+            res = div(a, b);
+        end if
+
+    wend
 end function

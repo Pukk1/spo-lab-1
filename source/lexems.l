@@ -156,10 +156,10 @@
  return AND;
  }
 "+"                                 {
- return PLUS;
+ return SUM;
  }
 "-"                                 {
- return MINUS;
+ return SUB;
  }
 "++"                                 {
  return INCREMENT;
@@ -181,6 +181,9 @@
  }
 "*"                                 {
  return MUL;
+ }
+"/"                                 {
+ return DIV;
  }
 "("                                 {
  return LPAREN;
