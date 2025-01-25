@@ -24,8 +24,7 @@
 %token <node> STR
 %token <node> COMMA
 %token <node> CHAR
-%token <node> BIN HEX DEC
-%token <node> TRUE FALSE
+%token <node> BIN HEX DEC BOOL
 %token <node> IF ELSE WHILE UNTIL DO BREAK
 %token <node> THEN
 %token <node> LOOP
@@ -194,8 +193,7 @@ listExpr:                   {{$$ = NULL;}}
 
 place: IDENTIFIER           {{$$ = $1;}};
 
-literal: TRUE               {{$$ = $1;}}
-    | FALSE                 {{$$ = $1;}}
+literal: BOOL               {{$$ = $1;}}
     | STR                   {{$$ = $1;}}
     | CHAR                  {{$$ = $1;}}
     | HEX                   {{$$ = $1;}}

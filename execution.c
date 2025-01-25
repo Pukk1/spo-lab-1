@@ -189,7 +189,7 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
         node = mallocTreeNode("SET", NULL, 2);
         char valuePlace[1024];
         sprintf(valuePlace,
-                "value place '%s'",
+                "%s",
                 parsingTree->childNodes[0]->value);
         node->childNodes[0] = mallocTreeNode(NULL, valuePlace, 0);
         if (!strcmp(parsingTree->type, "INCREMENT")) {
@@ -200,19 +200,18 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
         node->childNodes[1]->childNodes[0] = mallocTreeNode(NULL, "const: 1", 0);
         node->childNodes[1]->childNodes[1] = operationTreeNode(parsingTree->childNodes[0], funCalls);
     } else if (!strcmp(parsingTree->type, "callOrIndexer")) {
-        char executionName[1024];
-        sprintf(executionName,
-                "execute: %s",
-                parsingTree->childNodes[0]->value);
         if (parsingTree->childrenNumber == 1) {
-            node = mallocTreeNode(NULL, executionName, 0);
+            node = mallocTreeNode("EXECUTE", NULL, 1);
         } else {
             Array argsArray = findListItemsUtil(parsingTree->childNodes[1]);
-            node = mallocTreeNode(NULL, executionName, argsArray.nextPosition);
+            node = mallocTreeNode("EXECUTE", NULL, argsArray.nextPosition + 1);
             for (int i = 0; i < argsArray.nextPosition; ++i) {
-                node->childNodes[i] = operationTreeNode(argsArray.elements[i], funCalls);
+                node->childNodes[i + 1] = operationTreeNode(argsArray.elements[i], funCalls);
             }
         }
+        char executionName[1024];
+        sprintf(executionName, "%s", parsingTree->childNodes[0]->value);
+        node->childNodes[0] = mallocTreeNode(NULL, executionName, 0);
         char funCallOperationIdNodeString[1024];
         sprintf(funCallOperationIdNodeString, "%d", node->id);
         TreeNode *funCallOperationIdNode = mallocTreeNode("operationTreeId", funCallOperationIdNodeString, 1);
@@ -225,7 +224,7 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
         if (!strcmp(parsingTree->type, "SET")) {
             char valuePlace[1024];
             sprintf(valuePlace,
-                    "value place '%s'",
+                    "%s",
                     parsingTree->childNodes[0]->value);
             node->childNodes[0] = mallocTreeNode(NULL, valuePlace, 0);
             node->childNodes[1] = operationTreeNode(parsingTree->childNodes[1], funCalls);
@@ -235,18 +234,32 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
         }
     } else if (parsingTree->childrenNumber == 0) {
         if (!strcmp(parsingTree->type, "IDENTIFIER")) {
-            node = mallocTreeNode("read", NULL, 1);
+            node = mallocTreeNode("READ", NULL, 1);
             char valuePlace[1024];
             sprintf(valuePlace,
-                    "value place '%s'",
+                    "%s",
                     parsingTree->value);
             node->childNodes[0] = mallocTreeNode(NULL, valuePlace, 0);
         } else {
+            node = mallocTreeNode("CONST", NULL, 2);
+            char *typeByLiteral = "";
+            if (!strcmp(parsingTree->type, "DEC")) {
+                typeByLiteral = "int";
+            } else if (!strcmp(parsingTree->type, "BIN")) {
+                typeByLiteral = "int";
+            } else if (!strcmp(parsingTree->type, "HEX")) {
+                typeByLiteral = "int";
+            } else if (!strcmp(parsingTree->type, "CHAR")) {
+                typeByLiteral = "char";
+            } else if (!strcmp(parsingTree->type, "STR")) {
+                typeByLiteral = "str";
+            } else if (!strcmp(parsingTree->type, "BOOL")) {
+                typeByLiteral = "bool";
+            }
             char constVal[1024];
-            sprintf(constVal,
-                    "const: %s",
-                    parsingTree->value);
-            node = mallocTreeNode(NULL, constVal, 0);
+            sprintf(constVal, "%s", typeByLiteral);
+            node->childNodes[0] = mallocTreeNode(NULL, typeByLiteral, 0);
+            node->childNodes[1] = mallocTreeNode(NULL, parsingTree->value, 0);
         }
     }
     return node;

@@ -123,12 +123,12 @@
  return BREAK;
  }
 "true"                              {
- yylval.node = createNode("TRUE", NULL, "");
- return TRUE;
+ yylval.node = createNode("BOOL", NULL, yytext);
+ return BOOL;
  }
 "false"                             {
- yylval.node = createNode("FALSE", NULL, "");
- return FALSE;
+ yylval.node = createNode("BOOL", NULL, yytext);
+ return BOOL;
  }
 "%"                                 {
  return PERCENT;
