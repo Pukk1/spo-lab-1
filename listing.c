@@ -60,6 +60,14 @@ void printException(char *message) {
     printf("EXCEPTION: %s", message);
 }
 
+void fprintlnWithArg(char *message, char *arg, FILE *file) {
+    fprintf(file, "%s %s\n", message, arg);
+}
+
+void fprintln(char *message, FILE *file) {
+    fprintf(file, "%s\n", message);
+}
+
 ValuePlaceAssociation *addArgumentPlace(Array *valuePlaceAssociations, char *argName, char *argType) {
     ValuePlaceAssociation *findRes = findValuePlace(valuePlaceAssociations, argName);
     if (findRes != NULL) {
@@ -121,8 +129,8 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, Array
                 operationTree->childNodes[1]->value,
                 operationTree->childNodes[0]->value
         );
-        fprintf(listingFile, "%s\n", "PUSH 0");
-        fprintf(listingFile, "%s\n", "PUSH 0");
+        fprintln("PUSH 0", listingFile);
+        fprintln("PUSH 0", listingFile);
     }
 }
 
@@ -131,21 +139,23 @@ void tryPrintNode(ExecutionNode *executionNode, FILE *listingFile, Array *valueP
         return;
     }
     if (executionNode->listingNode->label != NULL) {
-        fprintf(listingFile, "%s:\n", executionNode->listingNode->label);
+        char label[1000];
+        sprintf(label, "%s:", executionNode->listingNode->label);
+        fprintln(label, listingFile);
     }
     executionNode->listingNode->checked++;
     if (executionNode->operationTree != NULL) {
         tryPrintOperationTreeNode(executionNode->operationTree, listingFile, valuePlaceAssociations);
         if (executionNode->conditionally != NULL) {
-            fprintf(listingFile, "JNZ %s\n", executionNode->conditionally->listingNode->label);
+            fprintlnWithArg("JNZ", executionNode->conditionally->listingNode->label, listingFile);
         }
     }
     if (executionNode->definitely == NULL) {
-        fprintf(listingFile, "%s\n", "RET");
+        fprintln("RET", listingFile);
         return;
     }
     if (executionNode->definitely->listingNode->checked > 1) {
-        fprintf(listingFile, "%s %s\n", "JMP", executionNode->definitely->listingNode->label);
+        fprintlnWithArg("JMP", executionNode->definitely->listingNode->label, listingFile);
     } else {
         tryPrintNode(executionNode->definitely, listingFile, valuePlaceAssociations);
     }
@@ -163,9 +173,11 @@ void printListing(Array *funExecutions, FILE *listingFile) {
         valuePlaceAssociationsArray->nextPosition = 0;
         valuePlaceAssociationsArray->elements = malloc(sizeof(ValuePlaceAssociation) * 100);
         FunExecution *funExecution = funExecutions->elements[i];
-        fprintf(listingFile, "%s:\n", funExecution->name);
-        fprintf(listingFile, "%s", "PUSH 0\n");
-        fprintf(listingFile, "%s", "PUSH 0\n");
+        char funLabel[1000];
+        sprintf(funLabel, "%s:", funExecution->name);
+        fprintln(funLabel, listingFile);
+        fprintln("PUSH 0", listingFile);
+        fprintln("PUSH 0", listingFile);
         tryPrintNode(funExecution->nodes, listingFile, valuePlaceAssociationsArray);
         free(valuePlaceAssociationsArray);
     }
