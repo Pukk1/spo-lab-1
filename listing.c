@@ -56,16 +56,22 @@ void tryPrintNode(ExecutionNode *executionNode, FILE *listingFile) {
         return;
     }
     executionNode->listingNode->checked++;
-    if (executionNode->definitely == NULL) {
-        return;
-    }
     if (executionNode->operationTree != NULL) {
         tryPrintOperationTreeNode(executionNode, listingFile);
     }
+    if (executionNode->definitely == NULL) {
+        fprintf(listingFile, "%s\n", "RET");
+        return;
+    }
     if (executionNode->definitely->listingNode->checked > 1) {
-
+        fprintf(listingFile, "%s %s\n", "JMP", executionNode->definitely->listingNode->label);
     } else {
         tryPrintNode(executionNode->definitely, listingFile);
+    }
+    if (executionNode->conditionally != NULL && executionNode->conditionally->listingNode->checked > 1) {
+        return;
+    } else {
+        tryPrintNode(executionNode->conditionally, listingFile);
     }
 }
 
