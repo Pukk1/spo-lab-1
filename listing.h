@@ -7,11 +7,18 @@
 #include "main.h"
 
 typedef struct ListingNode ListingNode;
+typedef struct ValuePlaceAssociation ValuePlaceAssociation;
 
 struct ListingNode {
     ExecutionNode *node;
     char *label;
     int checked;
+};
+
+struct ValuePlaceAssociation {
+    char *name;
+    char *type;
+    int shiftPosition;
 };
 
 void placeLabels(Array *funExecutions);

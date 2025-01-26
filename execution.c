@@ -446,8 +446,11 @@ ExecutionNode *functionArgsExecutionNode(TreeNode *functionSignatureNode, Execut
         for (int i = 0; i < args.nextPosition; ++i) {
             TreeNode *argDef = args.elements[i];
             char argText[1024];
-            sprintf(argText, "AS %s %s", argDef->childNodes[0]->value, argDef->childNodes[1]->value);
+            sprintf(argText, "ARG %s %s", argDef->childNodes[0]->value, argDef->childNodes[1]->value);
             ExecutionNode *newDimNode = initExecutionNode(argText);
+            newDimNode->operationTree = mallocTreeNode("ARG", NULL, 2);
+            newDimNode->operationTree->childNodes[0] = mallocTreeNode(NULL, argDef->childNodes[1]->value, 0);
+            newDimNode->operationTree->childNodes[1] = mallocTreeNode(NULL, argDef->childNodes[0]->value, 0);
             newDimNode->definitely = parentNode->definitely;
             parentNode->definitely = newDimNode;
             parentNode = newDimNode;

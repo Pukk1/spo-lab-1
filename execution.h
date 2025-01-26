@@ -48,5 +48,6 @@ Array *executionGraph(FilenameParseTree *input, int size);
 
 void printExecution(FunExecution *funExecution, FILE *outputFunCallFile, FILE *outputOperationTreesFile,
                     FILE *outputExecutionFile);
+void addToList(Array *currentArray, void *element);
 
 #endif // SPO_LAB1_EXECUTION_H
