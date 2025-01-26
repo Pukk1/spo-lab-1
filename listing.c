@@ -167,7 +167,7 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, Array
     } else if (!strcmp(operationType, "SUM")) {
         tryPrintOperationTreeNode(operationTree->childNodes[0], listingFile, valuePlaceAssociations, argumentNumber);
         tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);
-        fprintln("ADD", listingFile);
+        fprintln("SUM", listingFile);
     } else if (!strcmp(operationType, "SUB")) {
         tryPrintOperationTreeNode(operationTree->childNodes[0], listingFile, valuePlaceAssociations, argumentNumber);
         tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);

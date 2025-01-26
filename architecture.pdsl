@@ -28,7 +28,7 @@ architecture spo309681 {
             IP = IP + 2;
         };
 
-;TODO
+//TODO
         instruction load_const = { 0000 0000 0000 0011, imm64 as addr } {
             SP = SP - 8;
             ram:8[SP] = ram:8[addr];
@@ -41,7 +41,7 @@ architecture spo309681 {
             IP = IP + 10;
         };
 
-;TODO
+//TODO
         instruction load = { 0000 0000 0000 0101 } {
             let addr = ram:8[SP];
             ram:8[SP] = ram:8[addr];
@@ -54,7 +54,7 @@ architecture spo309681 {
             IP = IP + 10;
         };
 
-;TODO
+//TODO
         instruction save = { 0000 0000 0000 0111 } {
             let value = ram:8[SP];
             SP = SP + 8;
@@ -111,7 +111,7 @@ architecture spo309681 {
             IP = IP + 2;
         };
 
-;TODO
+//TODO
         instruction op_and = { 0000 0000 0101 0000 } {
             let a = ram:8[SP];
             SP = SP + 8;
@@ -121,7 +121,7 @@ architecture spo309681 {
             IP = IP + 2;
         };
 
-;TODO
+//TODO
         instruction op_or = { 0000 0000 0110 0000 } {
             let a = ram:8[SP];
             SP = SP + 8;
@@ -131,7 +131,7 @@ architecture spo309681 {
             IP = IP + 2;
         };
 
-;TODO
+//TODO
         instruction lt = { 0000 0000 0111 0000 } {
             let a = ram:8[SP];
             SP = SP + 8;
@@ -141,7 +141,7 @@ architecture spo309681 {
             IP = IP + 2;
         };
 
-;TODO
+//TODO
         instruction lte = { 0000 0000 1000 0000 } {
             let a = ram:8[SP];
             SP = SP + 8;
@@ -151,7 +151,7 @@ architecture spo309681 {
             IP = IP + 2;
         };
 
-;TODO
+//TODO
         instruction gt = { 0000 0000 1001 0000 } {
             let a = ram:8[SP];
             SP = SP + 8;
@@ -161,7 +161,7 @@ architecture spo309681 {
             IP = IP + 2;
         };
 
-;TODO
+//TODO
         instruction gte = { 0000 0000 1010 0000 } {
             let a = ram:8[SP];
             SP = SP + 8;
@@ -193,7 +193,7 @@ architecture spo309681 {
             IP = IP + 2;
         };
 
-;TODO
+//TODO
         instruction jz = { 0000 0001 0000 0000, imm64 as addr } {
             if (ram:8[SP] == 0) then IP = addr; else IP = IP + 10;
             SP = SP + 8;
@@ -225,7 +225,7 @@ architecture spo309681 {
             ram:8[SP+8] = ram:8[BP - 8];
         };
 
-;TODO
+//TODO
         instruction alloc = { 1110 0000 0000 0000, imm64 as byte_size } {
             SP = SP - 8;
             ram:8[SP] = HP;
@@ -233,7 +233,7 @@ architecture spo309681 {
             IP = IP + 10;
         };
 
-;TODO
+//TODO
         instruction init = { 1111 0000 0000 0000, imm64 as code_end_addr } {
             HP = code_end_addr;
             IP = IP + 10;

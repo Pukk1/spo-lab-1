@@ -12,8 +12,8 @@ const2:dw 0,0,0,2
 main:
 LOAD_CONST const1
 LOAD_CONST const2
-ADD
+SUM
 PUSH 3
 MUL
-RET 3,1
+RET 3
 code_end_addr:

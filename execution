@@ -1,6 +1,6 @@
-.\Portable.RemoteTasks.Manager.exe -ul u309681 -up f2576807-fc0e-47c5-a628-a461d1118e78 -g 5d9ab96f-724f-43c1-a646-d56309dec647
+.\Portable.RemoteTasks.Manager.exe -ul u309681 -up f2576807-fc0e-47c5-a628-a461d1118e78 -g 6e14f089-6f18-41e8-8f7e-0c76c55c8313
 .\Portable.RemoteTasks.Manager.exe -ul u309681 -up f2576807-fc0e-47c5-a628-a461d1118e78 -w -s ValidateArchDefSyntaxes definitionFile architecture.pdsl archName spo309681
 
 .\Portable.RemoteTasks.Manager.exe -ul u309681 -up f2576807-fc0e-47c5-a628-a461d1118e78 -w -id -s AssembleDebug definitionFile architecture.pdsl archName spo309681 asmListing test-list.asm sourcesDir output
-.\Portable.RemoteTasks.Manager.exe -ul u309681 -up f2576807-fc0e-47c5-a628-a461d1118e78 -g a32fcd6e-4f7a-4b15-970b-7fea2693c6c2 -r out.ptptb -o out.ptptb
+.\Portable.RemoteTasks.Manager.exe -ul u309681 -up f2576807-fc0e-47c5-a628-a461d1118e78 -g a179228a-111c-4720-a622-8e3f99b2b14f -r out.ptptb -o out.ptptb
 .\Portable.RemoteTasks.Manager.exe -ul u309681 -up f2576807-fc0e-47c5-a628-a461d1118e78 -il -q -w -s DebugBinary definitionFile architecture.pdsl archName spo309681 binaryFileToRun out.ptptb codeRamBankName ram ipRegStorageName IP finishMnemonicName HLT
