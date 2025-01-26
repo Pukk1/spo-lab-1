@@ -48,7 +48,7 @@ void placeLabels(Array *funExecutions) {
 
 ValuePlaceAssociation *findValuePlace(Array *valuePlaceAssociations, char *name) {
     for (int i = 0; i < valuePlaceAssociations->nextPosition; ++i) {
-        ValuePlaceAssociation *valuePlaceAssociation = valuePlaceAssociations->elements[0];
+        ValuePlaceAssociation *valuePlaceAssociation = valuePlaceAssociations->elements[i];
         if (!strcmp(valuePlaceAssociation->name, name)) {
             return valuePlaceAssociation;
         }
@@ -115,9 +115,11 @@ ValuePlaceAssociation *addValuePlace(Array *valuePlaceAssociations, char *valueP
     }
 }
 
-void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, Array *valuePlaceAssociations) {
+void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, Array *valuePlaceAssociations,
+                               int *argumentNumber) {
     char *operationType = operationTree->type;
     if (!strcmp(operationType, "ARG")) {
+        (*argumentNumber)++;
         addArgumentPlace(
                 valuePlaceAssociations,
                 operationTree->childNodes[1]->value,
@@ -131,10 +133,65 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, Array
         );
         fprintln("PUSH 0", listingFile);
         fprintln("PUSH 0", listingFile);
+    } else if (!strcmp(operationType, "CONST")) {
+//        TODO("переделать на нормальную типизацию)
+        fprintlnWithArg("PUSH", "1", listingFile);
+        fprintlnWithArg("PUSH", operationTree->childNodes[1]->value, listingFile);
+    } else if (!strcmp(operationType, "SET")) {
+        tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);
+        ValuePlaceAssociation *valuePlace = findValuePlace(valuePlaceAssociations, operationTree->childNodes[0]->value);
+        if (valuePlace == NULL) {
+            char exceptionMessage[1000];
+            sprintf(exceptionMessage, "value place not found by name %s", operationTree->childNodes[0]->value);
+            printException(exceptionMessage);
+            return;
+        }
+        char valuePlaceShift[1000];
+        sprintf(valuePlaceShift, "%d", valuePlace->shiftPosition);
+        fprintlnWithArg("SAVE_BP", valuePlaceShift, listingFile);
+    } else if (!strcmp(operationType, "READ")) {
+        ValuePlaceAssociation *valuePlace = findValuePlace(valuePlaceAssociations, operationTree->childNodes[0]->value);
+        if (valuePlace == NULL) {
+            char exceptionMessage[1000];
+            sprintf(exceptionMessage, "value place not found by name %s", operationTree->childNodes[0]->value);
+            printException(exceptionMessage);
+            return;
+        }
+        char valuePlaceShift[1000];
+        sprintf(valuePlaceShift, "%d", valuePlace->shiftPosition);
+        fprintlnWithArg("LOAD_BP", valuePlaceShift, listingFile);
+    } else if (!strcmp(operationType, "EQUALITY")) {
+        tryPrintOperationTreeNode(operationTree->childNodes[0], listingFile, valuePlaceAssociations, argumentNumber);
+        tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);
+        fprintln("EQ", listingFile);
+    } else if (!strcmp(operationType, "SUM")) {
+        tryPrintOperationTreeNode(operationTree->childNodes[0], listingFile, valuePlaceAssociations, argumentNumber);
+        tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);
+        fprintln("ADD", listingFile);
+    } else if (!strcmp(operationType, "SUB")) {
+        tryPrintOperationTreeNode(operationTree->childNodes[0], listingFile, valuePlaceAssociations, argumentNumber);
+        tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);
+        fprintln("SUB", listingFile);
+    } else if (!strcmp(operationType, "MUL")) {
+        tryPrintOperationTreeNode(operationTree->childNodes[0], listingFile, valuePlaceAssociations, argumentNumber);
+        tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);
+        fprintln("MUL", listingFile);
+    } else if (!strcmp(operationType, "DIV")) {
+        tryPrintOperationTreeNode(operationTree->childNodes[0], listingFile, valuePlaceAssociations, argumentNumber);
+        tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);
+        fprintln("DIV", listingFile);
+    } else if (!strcmp(operationType, "EXECUTE")) {
+        for (int i = 1; i < operationTree->childrenNumber; ++i) {
+            tryPrintOperationTreeNode(operationTree->childNodes[i], listingFile, valuePlaceAssociations,
+                                      argumentNumber);
+        }
+        fprintlnWithArg("CALL", operationTree->childNodes[0]->value, listingFile);
+    } else {
+        fprintln("EXCEPTION", listingFile);
     }
 }
 
-void tryPrintNode(ExecutionNode *executionNode, FILE *listingFile, Array *valuePlaceAssociations) {
+void tryPrintNode(ExecutionNode *executionNode, FILE *listingFile, Array *valuePlaceAssociations, int *argumentNumber) {
     if (executionNode == NULL) {
         return;
     }
@@ -145,29 +202,32 @@ void tryPrintNode(ExecutionNode *executionNode, FILE *listingFile, Array *valueP
     }
     executionNode->listingNode->checked++;
     if (executionNode->operationTree != NULL) {
-        tryPrintOperationTreeNode(executionNode->operationTree, listingFile, valuePlaceAssociations);
+        tryPrintOperationTreeNode(executionNode->operationTree, listingFile, valuePlaceAssociations, argumentNumber);
         if (executionNode->conditionally != NULL) {
             fprintlnWithArg("JNZ", executionNode->conditionally->listingNode->label, listingFile);
         }
     }
     if (executionNode->definitely == NULL) {
-        fprintln("RET", listingFile);
+        char argNumberString[10];
+        sprintf(argNumberString, "%d", *argumentNumber);
+        fprintlnWithArg("RET", argNumberString, listingFile);
         return;
     }
     if (executionNode->definitely->listingNode->checked > 1) {
         fprintlnWithArg("JMP", executionNode->definitely->listingNode->label, listingFile);
     } else {
-        tryPrintNode(executionNode->definitely, listingFile, valuePlaceAssociations);
+        tryPrintNode(executionNode->definitely, listingFile, valuePlaceAssociations, argumentNumber);
     }
     if (executionNode->conditionally != NULL && executionNode->conditionally->listingNode->checked > 1) {
         return;
     } else {
-        tryPrintNode(executionNode->conditionally, listingFile, valuePlaceAssociations);
+        tryPrintNode(executionNode->conditionally, listingFile, valuePlaceAssociations, argumentNumber);
     }
 }
 
 void printListing(Array *funExecutions, FILE *listingFile) {
     for (int i = 0; i < funExecutions->nextPosition; ++i) {
+        int argumentNumber = 0;
         Array *valuePlaceAssociationsArray = malloc(sizeof(Array));
         valuePlaceAssociationsArray->size = 100;
         valuePlaceAssociationsArray->nextPosition = 0;
@@ -178,7 +238,7 @@ void printListing(Array *funExecutions, FILE *listingFile) {
         fprintln(funLabel, listingFile);
         fprintln("PUSH 0", listingFile);
         fprintln("PUSH 0", listingFile);
-        tryPrintNode(funExecution->nodes, listingFile, valuePlaceAssociationsArray);
+        tryPrintNode(funExecution->nodes, listingFile, valuePlaceAssociationsArray, &argumentNumber);
         free(valuePlaceAssociationsArray);
     }
 }

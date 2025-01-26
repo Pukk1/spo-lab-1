@@ -14,12 +14,13 @@ function div(arg1 as int, arg2 as int) as int
     arg1 / arg2;
 end function
 
-function main(io as int)
+function main()
+    dim io as int
     dim a as int
     dim b as int
     dim op as int
     dim res as int
-    while true
+    while 1
         a = io;
         b = io;
         op = io;

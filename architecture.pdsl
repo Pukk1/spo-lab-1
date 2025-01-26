@@ -28,6 +28,7 @@ architecture spo309681 {
             IP = IP + 2;
         };
 
+;TODO
         instruction load_const = { 0000 0000 0000 0011, imm64 as addr } {
             SP = SP - 8;
             ram:8[SP] = ram:8[addr];
@@ -35,11 +36,12 @@ architecture spo309681 {
         };
 
         instruction load_bp = { 0000 0000 0000 0100, imm64 as shift } {
-            SP = SP - 8;
-            ram:8[SP] = ram:8[BP - 8 - shift * 8];
+            SP = SP - 16;
+            ram:16[SP] = ram:16[BP - shift * 8];
             IP = IP + 10;
         };
 
+;TODO
         instruction load = { 0000 0000 0000 0101 } {
             let addr = ram:8[SP];
             ram:8[SP] = ram:8[addr];
@@ -47,11 +49,12 @@ architecture spo309681 {
         };
 
         instruction save_bp = { 0000 0000 0000 0110, imm64 as shift } {
-            ram:8[BP - 8 - shift * 8] = ram:8[SP];
-            SP = SP + 8;
+            ram:16[BP - shift * 8] = ram:16[SP];
+            SP = SP + 16;
             IP = IP + 10;
         };
 
+;TODO
         instruction save = { 0000 0000 0000 0111 } {
             let value = ram:8[SP];
             SP = SP + 8;
@@ -60,42 +63,55 @@ architecture spo309681 {
             IP = IP + 2;
         };
 
-        instruction add = { 0000 0000 0001 0000 } {
+        instruction sum = { 0000 0000 0001 0000 } {
+            let at = ram:8[SP];
+            SP = SP + 8;
             let a = ram:8[SP];
             SP = SP + 8;
-            let b = ram:8[SP];
+            let bt = ram:8[SP];
+            let b = ram:8[SP+8];
             let value = a + b;
-            ram:8[SP] = value;
+            ram:8[SP+8] = value;
             IP = IP + 2;
         };
 
         instruction sub = { 0000 0000 0010 0000 } {
+            let bt = ram:8[SP];
+            SP = SP + 8;
             let b = ram:8[SP];
             SP = SP + 8;
-            let a = ram:8[SP];
+            let at = ram:8[SP];
+            let a = ram:8[SP+8];
             let value = a - b;
-            ram:8[SP] = value;
+            ram:8[SP+8] = value;
             IP = IP + 2;
         };
 
         instruction mul = { 0000 0000 0011 0000 } {
             let a = ram:8[SP];
             SP = SP + 8;
-            let b = ram:8[SP];
+            let at = ram:8[SP];
+            SP = SP + 8;
+            let bt = ram:8[SP];
+            let b = ram:8[SP+8];
             let value = a * b;
-            ram:8[SP] = value;
+            ram:8[SP+8] = value;
             IP = IP + 2;
         };
 
         instruction div = { 0000 0000 0100 0000 } {
+            let bt = ram:8[SP];
+            SP = SP + 8;
             let b = ram:8[SP];
             SP = SP + 8;
-            let a = ram:8[SP];
+            let at = ram:8[SP];
+            let a = ram:8[SP+8];
             let value = a / b;
-            ram:8[SP] = value;
+            ram:8[SP+8] = value;
             IP = IP + 2;
         };
 
+;TODO
         instruction op_and = { 0000 0000 0101 0000 } {
             let a = ram:8[SP];
             SP = SP + 8;
@@ -105,6 +121,7 @@ architecture spo309681 {
             IP = IP + 2;
         };
 
+;TODO
         instruction op_or = { 0000 0000 0110 0000 } {
             let a = ram:8[SP];
             SP = SP + 8;
@@ -114,6 +131,7 @@ architecture spo309681 {
             IP = IP + 2;
         };
 
+;TODO
         instruction lt = { 0000 0000 0111 0000 } {
             let a = ram:8[SP];
             SP = SP + 8;
@@ -123,6 +141,7 @@ architecture spo309681 {
             IP = IP + 2;
         };
 
+;TODO
         instruction lte = { 0000 0000 1000 0000 } {
             let a = ram:8[SP];
             SP = SP + 8;
@@ -132,6 +151,7 @@ architecture spo309681 {
             IP = IP + 2;
         };
 
+;TODO
         instruction gt = { 0000 0000 1001 0000 } {
             let a = ram:8[SP];
             SP = SP + 8;
@@ -141,6 +161,7 @@ architecture spo309681 {
             IP = IP + 2;
         };
 
+;TODO
         instruction gte = { 0000 0000 1010 0000 } {
             let a = ram:8[SP];
             SP = SP + 8;
@@ -151,30 +172,35 @@ architecture spo309681 {
         };
 
         instruction eq = { 0000 0000 1011 0000 } {
+            let at = ram:8[SP];
+            SP = SP + 8;
             let a = ram:8[SP];
             SP = SP + 8;
-            let b = ram:8[SP];
-            if (a == b) then ram:8[SP] = 1; else ram:8[SP] = 0;
-            ram:8[SP] = 0;
+            let bt = ram:8[SP];
+            let b = ram:8[SP+8];
+            if (a == b) then ram:8[SP+8] = 1; else ram:8[SP+8] = 0;
             IP = IP + 2;
         };
 
         instruction neq = { 0000 0000 1100 0000 } {
+            let at = ram:8[SP];
+            SP = SP + 8;
             let a = ram:8[SP];
             SP = SP + 8;
-            let b = ram:8[SP];
-            if (a != b) then ram:8[SP] = 1; else ram:8[SP] = 0;
-            ram:8[SP] = 0;
+            let bt = ram:8[SP];
+            let b = ram:8[SP+8];
+            if (a != b) then ram:8[SP+8] = 1; else ram:8[SP+8] = 0;
             IP = IP + 2;
         };
 
+;TODO
         instruction jz = { 0000 0001 0000 0000, imm64 as addr } {
             if (ram:8[SP] == 0) then IP = addr; else IP = IP + 10;
             SP = SP + 8;
         };
 
         instruction jnz = { 0000 0010 0000 0000, imm64 as addr } {
-            if (ram:8[SP] != 0) then IP = addr; else IP = IP + 10;
+            if (ram:8[SP+8] != 0) then IP = addr; else IP = IP + 10;
             SP = SP + 8;
         };
 
@@ -189,19 +215,17 @@ architecture spo309681 {
             IP = addr;
         };
 
-        instruction ret = { 0010 0000 0000 0000, imm64 as arg_number, imm64 as returned } {
+        instruction ret = { 0010 0000 0000 0000, imm64 as arg_number } {
             SP = BP;
             IP = ram:8[SP];
             SP = SP + 8;
-            SP = SP + arg_number * 8;
-            SP = SP - 8;
-            if returned == 1 then {
-                ram:8[SP] = ram:8[BP - 8];
-            } else {
-                ram:8[SP] = 0;
-            }
+            SP = SP + arg_number * 16;
+            SP = SP - 16;
+            ram:8[SP] = ram:8[BP - 16];
+            ram:8[SP+8] = ram:8[BP - 8];
         };
 
+;TODO
         instruction alloc = { 1110 0000 0000 0000, imm64 as byte_size } {
             SP = SP - 8;
             ram:8[SP] = HP;
@@ -209,6 +233,7 @@ architecture spo309681 {
             IP = IP + 10;
         };
 
+;TODO
         instruction init = { 1111 0000 0000 0000, imm64 as code_end_addr } {
             HP = code_end_addr;
             IP = IP + 10;
@@ -225,7 +250,7 @@ architecture spo309681 {
         mnemonic LOAD for load();
         mnemonic SAVE for save();
 
-        mnemonic ADD for add();
+        mnemonic SUM for sum();
         mnemonic SUB for sub();
         mnemonic MUL for mul();
         mnemonic DIV for div();
@@ -243,7 +268,7 @@ architecture spo309681 {
         mnemonic JMP for jmp(addr) "{1}";
 
         mnemonic CALL for call(addr) "{1}";
-        mnemonic RET for ret(arg_number, returned) "{1},{2}";
+        mnemonic RET for ret(arg_number) "{1}";
 
         mnemonic ALLOC for alloc(byte_size) "{1}";
         mnemonic INIT for init(code_end_addr) "{1}";
