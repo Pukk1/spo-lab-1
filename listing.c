@@ -226,6 +226,11 @@ void tryPrintNode(ExecutionNode *executionNode, FILE *listingFile, Array *valueP
 }
 
 void printListing(Array *funExecutions, FILE *listingFile) {
+    fprintln("[section ram]", listingFile);
+    fprintln("INIT code_end_addr", listingFile);
+    fprintln("CALL main", listingFile);
+    fprintln("POP", listingFile);
+    fprintln("HLT", listingFile);
     for (int i = 0; i < funExecutions->nextPosition; ++i) {
         int argumentNumber = 0;
         Array *valuePlaceAssociationsArray = malloc(sizeof(Array));
@@ -241,4 +246,5 @@ void printListing(Array *funExecutions, FILE *listingFile) {
         tryPrintNode(funExecution->nodes, listingFile, valuePlaceAssociationsArray, &argumentNumber);
         free(valuePlaceAssociationsArray);
     }
+    fprintln("code_end_addr:", listingFile);
 }
