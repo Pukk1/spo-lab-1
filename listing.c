@@ -17,19 +17,22 @@ void tryPlaceLabel(ExecutionNode *executionNode, int *labelCounter, bool necessa
     if (executionNode == NULL) {
         return;
     }
-    if (executionNode->listingNode != NULL || necessaryLabeled) {
-        if (necessaryLabeled && executionNode->listingNode == NULL) {
-            initListingParseNode(executionNode);
-        }
+    bool existListing = false;
+    if (executionNode->listingNode != NULL) {
+        existListing = true;
+    } else {
+        initListingParseNode(executionNode);
+    }
+    if (existListing || necessaryLabeled) {
         char *existingLabel = executionNode->listingNode->label;
         if (existingLabel == NULL) {
             ++(*labelCounter);
             char *label = malloc(sizeof(char) * 10);
-            sprintf(label, "%d", *labelCounter);
+            sprintf(label, "label%d", *labelCounter);
             executionNode->listingNode->label = label;
         }
-    } else {
-        initListingParseNode(executionNode);
+    }
+    if (!existListing) {
         tryPlaceLabel(executionNode->definitely, labelCounter, false);
         tryPlaceLabel(executionNode->conditionally, labelCounter, true);
     }
@@ -43,17 +46,19 @@ void placeLabels(Array *funExecutions) {
     }
 }
 
-void tryPrintConditionNode() {
-
-}
-
 void tryPrintOperationTreeNode(ExecutionNode *executionNode, FILE *listingFile) {
-
+    fprintf(listingFile, "%s\n", executionNode->text);
+    if (executionNode->conditionally != NULL) {
+        fprintf(listingFile, "JNZ %s\n", executionNode->conditionally->listingNode->label);
+    }
 }
 
 void tryPrintNode(ExecutionNode *executionNode, FILE *listingFile) {
     if (executionNode == NULL) {
         return;
+    }
+    if (executionNode->listingNode->label != NULL) {
+        fprintf(listingFile, "%s:\n", executionNode->listingNode->label);
     }
     executionNode->listingNode->checked++;
     if (executionNode->operationTree != NULL) {
