@@ -106,6 +106,7 @@ ExecutionNode *initExecutionNode(char *text) {
     node->conditionally = NULL;
     node->operationTree = NULL;
     node->printed = 0;
+    node->listingNode = NULL;
     return node;
 }
 
@@ -291,7 +292,7 @@ char *expressionNodeToString(TreeNode *treeNode) {
         char *childRightStr = expressionNodeToString(treeNode->childNodes[1]);
         char text[1024];
         sprintf(text,
-                "OP_TREE %s %s %s",
+                "%s %s %s",
                 childLeftStr, treeNode->type, childRightStr);
         return mallocString(text);
     }

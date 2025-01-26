@@ -1,10 +1,4 @@
 #include "main.h"
-#include "execution.h"
-#include "node.h"
-#include "parser.h"
-#include <stdio.h>
-#include <dirent.h>
-#include <libgen.h>
 
 
 void printParseTree(char *outputDirName, FILE *inputFile, char *baseInputFileName, ParseResult *resultParseTree) {
@@ -51,6 +45,14 @@ void printExecutionGraph(char *outputDirName, char *baseInputFileName, ParseResu
     }
 }
 
+void printListingToFile(Array *resultExecutionGraph, char *outputDirName) {
+    char outputListingFileName[1024];
+    sprintf(outputListingFileName, "%s/listing.txt", outputDirName);
+    FILE *outputParseTreeFile = fopen(outputListingFileName, "w");
+    printListing(resultExecutionGraph, outputParseTreeFile);
+    fclose(outputParseTreeFile);
+}
+
 void fileCloses(DIR *outputDir, FILE *inputFiles[], int inputFilesNumber) {
     closedir(outputDir);
     for (int i = 0; i < inputFilesNumber; ++i) {
@@ -94,6 +96,9 @@ int main(int argc, char *argv[]) {
         FilenameParseTree fileNameParseTree = (FilenameParseTree) {baseInputFileName, resultParseTree};
         Array *resultExecutionGraph = executionGraph(&fileNameParseTree, 1);
         printExecutionGraph(outputDirName, baseInputFileName, resultParseTree, resultExecutionGraph);
+
+        placeLabels(resultExecutionGraph);
+        printListingToFile(resultExecutionGraph, outputDirName);
 
         freeMem(resultParseTree);
     }

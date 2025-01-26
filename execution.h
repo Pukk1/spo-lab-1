@@ -11,6 +11,7 @@ typedef struct FilenameParseTree FilenameParseTree;
 typedef struct ExecutionNode ExecutionNode;
 typedef struct FunExecution FunExecution;
 typedef struct Array Array;
+typedef struct ListingNode ListingNode;
 
 struct ExecutionNode {
     char *text;
@@ -19,6 +20,7 @@ struct ExecutionNode {
     TreeNode *operationTree;
     int id;
     int printed;
+    ListingNode *listingNode;
 };
 
 struct Array {
