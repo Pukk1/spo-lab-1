@@ -83,7 +83,7 @@ ValuePlaceAssociation *addArgumentPlace(Array *valuePlaceAssociations, char *arg
         ValuePlaceAssociation *newArgAssociation = malloc(sizeof(ValuePlaceAssociation));
         newArgAssociation->name = argName;
         newArgAssociation->type = argType;
-        newArgAssociation->shiftPosition = -2;
+        newArgAssociation->shiftPosition = -3;
         addToList(valuePlaceAssociations, newArgAssociation);
         return newArgAssociation;
     }

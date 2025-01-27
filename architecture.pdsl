@@ -44,7 +44,7 @@ architecture spo309681 {
                 SP = SP - 8;
                 ram:8[SP] = ram:8[(BP + (~shift + 1) * 8) & 0x0FFFF];
                 SP = SP - 8;
-                ram:8[SP] = ram:8[(((~shift + 1) + 1) * 8) & 0x0FFFF];
+                ram:8[SP] = ram:8[(BP + ((~shift + 1) + 1) * 8) & 0x0FFFF];
                 IP = IP + 4;
             } else {
                 SP = SP - 8;
@@ -228,8 +228,10 @@ architecture spo309681 {
 
         instruction call = { 0001 0000 0000 0000, imm64 as addr } {
             SP = SP - 8;
-            BP = SP;
+            ram:8[SP] = BP;
+            SP = SP - 8;
             ram:8[SP] = IP + 10;
+            BP = SP;
             IP = addr;
         };
 
@@ -237,11 +239,17 @@ architecture spo309681 {
             SP = BP;
             IP = ram:8[SP];
             SP = SP + 8;
+            let oldbp = ram:8[SP];
+            SP = SP + 8;
             SP = SP + arg_number * 16;
             SP = SP - 8;
-            ram:8[SP] = ram:8[BP - 8];
+            EX = BP - 8;
+            BP = BP - 8;
+            ram:8[SP] = ram:8[BP];
             SP = SP - 8;
-            ram:8[SP] = ram:8[BP - 16];
+            BP = BP - 8;
+            ram:8[SP] = ram:8[BP];
+            BP = oldbp;
         };
 
 //TODO
