@@ -7,7 +7,7 @@ architecture spo309681 {
         storage HP[16]; /* Указатель на кучу */
         storage IO_PORT[64]; /* Порт ввода-вывода */
 
-        storage EX[64]; /* ДЛЯ ПРОВЕРКИ ОШИБОК */
+        storage EX[16]; /* ДЛЯ ПРОВЕРКИ ОШИБОК */
 
     memory:
         range ram [0x0000..0xFFFF] {
@@ -39,14 +39,25 @@ architecture spo309681 {
         };
 
         instruction load_bp = { 0000 0000 0000 0100, imm16 as shift } {
-            let pref = 1;
-            if shift < 0 then
-                pref = -1;
-            SP = SP - 8;
-            ram:8[SP] = ram:8[BP - (shift * 8 * pref)];
-            SP = SP - 8;
-            ram:8[SP] = ram:8[BP - ((shift + 1) * 8 * pref)];
-            IP = IP + 10;
+            if (shift >> 15) == 1 then {
+//              без прогонки через регистр x возникает какая-то 8ка: Error: Access out of addressable space range: 0x8ffc0 vs ram[0x0..0x0ffff]
+                let ex = BP + (~shift + 1) * 8;
+                EX = ex;
+                SP = SP - 8;
+                ram:8[SP] = ram:8[EX];
+                SP = SP - 8;
+                ex = BP + ((~shift + 1) + 1) * 8;
+                EX = ex;
+                ram:8[SP] = ram:8[EX];
+                IP = IP + 4;
+            } else {
+                EX = 2;
+                SP = SP - 8;
+                ram:8[SP] = ram:8[BP - (shift * 8)];
+                SP = SP - 8;
+                ram:8[SP] = ram:8[BP - ((shift + 1) * 8)];
+                IP = IP + 4;
+            }
         };
 
 //TODO
@@ -64,7 +75,7 @@ architecture spo309681 {
             SP = SP + 8;
             ram:8[BP - (shift * 8 * pref)] = ram:8[SP];
             SP = SP + 8;
-            IP = IP + 10;
+            IP = IP + 4;
         };
 
 //TODO
