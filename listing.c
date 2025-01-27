@@ -210,6 +210,7 @@ void tryPrintNode(ExecutionNode *executionNode, FILE *listingFile, Array *valueP
     if (executionNode->definitely == NULL) {
         char argNumberString[10];
         sprintf(argNumberString, "%d", *argumentNumber);
+        fprintln("SAVE_BP 1", listingFile);
         fprintlnWithArg("RET", argNumberString, listingFile);
         return;
     }
