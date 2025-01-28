@@ -23,6 +23,8 @@ function main()
         a = stdin() - 48;
         op = stdin();
         b = stdin() - 48;
+        stdin();
+        stdin();
         if op == 43 then
             res = sum(a, b);
         end if
@@ -37,5 +39,6 @@ function main()
         end if
         stdout(res + 48);
         stdout(10);
+        stdout(13);
     wend
 end function
