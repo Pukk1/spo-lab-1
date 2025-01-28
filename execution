@@ -4,3 +4,6 @@
 .\Portable.RemoteTasks.Manager.exe -ul u309681 -up f2576807-fc0e-47c5-a628-a461d1118e78 -w -id -s AssembleDebug definitionFile architecture.pdsl archName spo309681 asmListing test-list.asm sourcesDir output
 .\Portable.RemoteTasks.Manager.exe -ul u309681 -up f2576807-fc0e-47c5-a628-a461d1118e78 -g 1c560d56-9622-49e1-9523-11e66802175e -r out.ptptb -o out.ptptb
 .\Portable.RemoteTasks.Manager.exe -ul u309681 -up f2576807-fc0e-47c5-a628-a461d1118e78 -il -q -w -s DebugBinary definitionFile architecture.pdsl archName spo309681 binaryFileToRun out.ptptb codeRamBankName ram ipRegStorageName IP finishMnemonicName HLT
+
+.\Portable.RemoteTasks.Manager.exe -ul u309681 -up f2576807-fc0e-47c5-a628-a461d1118e78 -il -q -w -s DebugBinaryWithInteractiveInput stdinRegStName IN_PORT stdoutRegStName OUT_PORT definitionFile architecture.pdsl archName spo309681 binaryFileToRun out.ptptb codeRamBankName ram ipRegStorageName IP finishMnemonicName HLT
+.\Portable.RemoteTasks.Manager.exe -ul u309681 -up f2576807-fc0e-47c5-a628-a461d1118e78 -il -q -w -s ExecuteBinaryWithInteractiveInput stdinRegStName IN_PORT stdoutRegStName OUT_PORT definitionFile architecture.pdsl archName spo309681 binaryFileToRun out.ptptb codeRamBankName ram ipRegStorageName IP finishMnemonicName HLT
