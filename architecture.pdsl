@@ -5,7 +5,8 @@ architecture spo309681 {
         storage IP[16]; /* Указатель на текущую инструкцию */
         storage BP[16]; /* Указатель на базовый адрес фрейма стека */
         storage HP[16]; /* Указатель на кучу */
-        storage IO_PORT[64]; /* Порт ввода-вывода */
+        storage IN_PORT[8]; /* Порт ввода */
+        storage OUT_PORT[8]; /* Порт вывода */
 
         storage EX[16]; /* ДЛЯ ПРОВЕРКИ ОШИБОК */
 
@@ -76,6 +77,20 @@ architecture spo309681 {
             SP = SP + 8;
             let addr = ram:8[SP];
             ram:8[addr] = value;
+            IP = IP + 2;
+        };
+
+        instruction load_in = { 0000 0000 0000 1000 } {
+            SP = SP - 8;
+            ram:8[SP] = 1;
+            SP = SP - 8;
+            ram:8[SP] = IN_PORT;
+            IP = IP + 2;
+        };
+
+        instruction save_out = { 0000 0000 0000 1001 } {
+            OUT_PORT = ram:8[SP];
+            SP = SP -16;
             IP = IP + 2;
         };
 
@@ -275,6 +290,8 @@ architecture spo309681 {
         mnemonic LOAD_BP for load_bp(shift) "{1}";
         mnemonic SAVE_BP for save_bp(shift) "{1}";
         mnemonic LOAD for load();
+        mnemonic LOAD_IN for load_in();
+        mnemonic SAVE_OUT for save_out();
         mnemonic SAVE for save();
 
         mnemonic SUM for sum();
