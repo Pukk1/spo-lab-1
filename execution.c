@@ -37,6 +37,7 @@ void addToList(Array *currentArray, void *element) {
             nodes[i] = currentArray->elements[i];
         }
         free(currentArray->elements);
+        currentArray->elements = nodes;
     }
     nodes[currentArray->nextPosition] = element;
     currentArray->nextPosition += 1;
