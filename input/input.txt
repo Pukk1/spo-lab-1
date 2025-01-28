@@ -15,31 +15,27 @@ function div(arg1 as int, arg2 as int) as int
 end function
 
 function main()
-    dim io as int
     dim a as int
     dim b as int
     dim op as int
     dim res as int
     while 1
-        a = 1;
-        b = 2;
-        op = 1;
-        if op == 1 then
+        a = stdin() - 48;
+        op = stdin();
+        b = stdin() - 48;
+        if op == 43 then
             res = sum(a, b);
-            op = op + 1;
         end if
-        if op == 2 then
+        if op == 45 then
             res = sub(a, b);
-            op = op + 1;
         end if
-        if op == 3 then
+        if op == 42 then
             res = mul(a, b);
-            op = op + 1;
         end if
-        if op == 4 then
+        if op == 47 then
             res = div(a, b);
-            op = op + 1;
         end if
-
+        stdout(res + 48);
+        stdout(10);
     wend
 end function
