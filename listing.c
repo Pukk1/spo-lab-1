@@ -181,11 +181,23 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, Array
         tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);
         fprintln("DIV", listingFile);
     } else if (!strcmp(operationType, "EXECUTE")) {
-        for (int i = 1; i < operationTree->childrenNumber; ++i) {
-            tryPrintOperationTreeNode(operationTree->childNodes[i], listingFile, valuePlaceAssociations,
-                                      argumentNumber);
+        if (!strcmp(operationTree->childNodes[0]->value, "stdin")) {
+            fprintln("LOAD_IN", listingFile);
+        } else if (!strcmp(operationTree->childNodes[0]->value, "stdout")) {
+            tryPrintOperationTreeNode(
+                    operationTree->childNodes[1],
+                    listingFile,
+                    valuePlaceAssociations,
+                    argumentNumber
+            );
+            fprintln("SAVE_OUT", listingFile);
+        } else {
+            for (int i = 1; i < operationTree->childrenNumber; ++i) {
+                tryPrintOperationTreeNode(operationTree->childNodes[i], listingFile, valuePlaceAssociations,
+                                          argumentNumber);
+            }
+            fprintlnWithArg("CALL", operationTree->childNodes[0]->value, listingFile);
         }
-        fprintlnWithArg("CALL", operationTree->childNodes[0]->value, listingFile);
     } else {
         fprintln("EXCEPTION", listingFile);
     }
