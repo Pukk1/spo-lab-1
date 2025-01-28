@@ -43,9 +43,9 @@ architecture spo309681 {
             if (shift >> 15) == 1 then {
 //              без & 0x0FFFF: Error: Access out of addressable space range: 0x8ffc0 vs ram[0x0..0x0ffff]
                 SP = SP - 8;
-                ram:8[SP] = ram:8[(BP + (~shift + 1) * 8) & 0x0FFFF];
-                SP = SP - 8;
                 ram:8[SP] = ram:8[(BP + ((~shift + 1) + 1) * 8) & 0x0FFFF];
+                SP = SP - 8;
+                ram:8[SP] = ram:8[(BP + (~shift + 1) * 8) & 0x0FFFF];
                 IP = IP + 4;
             } else {
                 SP = SP - 8;
