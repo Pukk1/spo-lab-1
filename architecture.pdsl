@@ -32,13 +32,6 @@ architecture spo309681 {
             IP = IP + 2;
         };
 
-//TODO
-        instruction load_const = { 0000 0000 0000 0011, imm64 as addr } {
-            SP = SP - 8;
-            ram:8[SP] = ram:8[addr];
-            IP = IP + 10;
-        };
-
         instruction load_bp = { 0000 0000 0000 0100, imm16 as shift } {
             if (shift >> 15) == 1 then {
 //              без & 0x0FFFF: Error: Access out of addressable space range: 0x8ffc0 vs ram[0x0..0x0ffff]
@@ -56,10 +49,10 @@ architecture spo309681 {
             }
         };
 
-//TODO
         instruction load = { 0000 0000 0000 0101 } {
             let addr = ram:8[SP];
-            ram:8[SP] = ram:8[addr];
+            ram:8[SP + 8] = ram:8[addr];
+            ram:8[SP] = ram:8[addr + 8];
             IP = IP + 2;
         };
 
@@ -156,63 +149,71 @@ architecture spo309681 {
             IP = IP + 2;
         };
 
-//TODO
         instruction op_and = { 0000 0000 0110 0000 } {
-            let a = ram:8[SP];
-            SP = SP + 8;
             let b = ram:8[SP];
+            SP = SP + 8;
+            let bt = ram:8[SP];
+            SP = SP + 8;
+            let a = ram:8[SP];
+            let at = ram:8[SP+8];
             let value = a & b;
             ram:8[SP] = value;
             IP = IP + 2;
         };
 
-//TODO
         instruction op_or = { 0000 0000 0111 0000 } {
-            let a = ram:8[SP];
-            SP = SP + 8;
             let b = ram:8[SP];
+            SP = SP + 8;
+            let bt = ram:8[SP];
+            SP = SP + 8;
+            let a = ram:8[SP];
+            let at = ram:8[SP+8];
             let value = a | b;
             ram:8[SP] = value;
             IP = IP + 2;
         };
 
-//TODO
         instruction lt = { 0000 0000 1000 0000 } {
-            let a = ram:8[SP];
-            SP = SP + 8;
             let b = ram:8[SP];
+            SP = SP + 8;
+            let bt = ram:8[SP];
+            SP = SP + 8;
+            let a = ram:8[SP];
+            let at = ram:8[SP+8];
             if (a < b) then ram:8[SP] = 1; else ram:8[SP] = 0;
-            ram:8[SP] = 0;
             IP = IP + 2;
         };
 
-//TODO
         instruction lte = { 0000 0000 1001 0000 } {
-            let a = ram:8[SP];
-            SP = SP + 8;
             let b = ram:8[SP];
+            SP = SP + 8;
+            let bt = ram:8[SP];
+            SP = SP + 8;
+            let a = ram:8[SP];
+            let at = ram:8[SP+8];
             if (a <= b) then ram:8[SP] = 1; else ram:8[SP] = 0;
-            ram:8[SP] = 0;
             IP = IP + 2;
         };
 
-//TODO
         instruction gt = { 0000 0000 1010 0000 } {
-            let a = ram:8[SP];
-            SP = SP + 8;
             let b = ram:8[SP];
+            SP = SP + 8;
+            let bt = ram:8[SP];
+            SP = SP + 8;
+            let a = ram:8[SP];
+            let at = ram:8[SP+8];
             if (a > b) then ram:8[SP] = 1; else ram:8[SP] = 0;
-            ram:8[SP] = 0;
             IP = IP + 2;
         };
 
-//TODO
         instruction gte = { 0000 0000 1011 0000 } {
-            let a = ram:8[SP];
-            SP = SP + 8;
             let b = ram:8[SP];
+            SP = SP + 8;
+            let bt = ram:8[SP];
+            SP = SP + 8;
+            let a = ram:8[SP];
+            let at = ram:8[SP+8];
             if (a >= b) then ram:8[SP] = 1; else ram:8[SP] = 0;
-            ram:8[SP] = 0;
             IP = IP + 2;
         };
 
@@ -240,10 +241,9 @@ architecture spo309681 {
             IP = IP + 2;
         };
 
-//TODO
         instruction jz = { 0000 0001 0000 0000, imm64 as addr } {
             if (ram:8[SP] == 0) then IP = addr; else IP = IP + 10;
-            SP = SP + 8;
+            SP = SP + 16;
         };
 
         instruction jnz = { 0000 0010 0000 0000, imm64 as addr } {
@@ -290,7 +290,6 @@ architecture spo309681 {
             IP = IP + 10;
         };
 
-//TODO
         instruction init = { 1111 0000 0000 0000, imm64 as code_end_addr } {
             HP = code_end_addr;
             IP = IP + 10;
@@ -301,7 +300,6 @@ architecture spo309681 {
     mnemonics:
         mnemonic PUSH for push(value) "{1}";
         mnemonic POP for pop();
-        mnemonic LOAD_CONST for load_const(addr) "{1}";
         mnemonic LOAD_BP for load_bp(shift) "{1}";
         mnemonic SAVE_BP for save_bp(shift) "{1}";
         mnemonic LOAD for load();
