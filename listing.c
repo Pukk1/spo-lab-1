@@ -164,6 +164,10 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, Array
         tryPrintOperationTreeNode(operationTree->childNodes[0], listingFile, valuePlaceAssociations, argumentNumber);
         tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);
         fprintln("EQ", listingFile);
+    } else if (!strcmp(operationType, "NOTEQUAL")) {
+        tryPrintOperationTreeNode(operationTree->childNodes[0], listingFile, valuePlaceAssociations, argumentNumber);
+        tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);
+        fprintln("NEQ", listingFile);
     } else if (!strcmp(operationType, "SUM")) {
         tryPrintOperationTreeNode(operationTree->childNodes[0], listingFile, valuePlaceAssociations, argumentNumber);
         tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);
@@ -180,6 +184,10 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, Array
         tryPrintOperationTreeNode(operationTree->childNodes[0], listingFile, valuePlaceAssociations, argumentNumber);
         tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);
         fprintln("DIV", listingFile);
+    } else if (!strcmp(operationType, "PERCENT")) {
+        tryPrintOperationTreeNode(operationTree->childNodes[0], listingFile, valuePlaceAssociations, argumentNumber);
+        tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);
+        fprintln("MOD", listingFile);
     } else if (!strcmp(operationType, "EXECUTE")) {
         if (!strcmp(operationTree->childNodes[0]->value, "stdin")) {
             fprintln("LOAD_IN", listingFile);

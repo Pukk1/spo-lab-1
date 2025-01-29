@@ -142,6 +142,18 @@ architecture spo309681 {
             IP = IP + 2;
         };
 
+        instruction mod = { 0000 0000 0100 0000 } {
+            let b = ram:8[SP];
+            SP = SP + 8;
+            let bt = ram:8[SP];
+            SP = SP + 8;
+            let a = ram:8[SP];
+            let at = ram:8[SP+8];
+            let value = a % b;
+            ram:8[SP] = value;
+            IP = IP + 2;
+        };
+
 //TODO
         instruction op_and = { 0000 0000 0101 0000 } {
             let a = ram:8[SP];
@@ -298,6 +310,7 @@ architecture spo309681 {
         mnemonic SUB for sub();
         mnemonic MUL for mul();
         mnemonic DIV for div();
+        mnemonic MOD for mod();
         mnemonic BIT_AND for op_and();
         mnemonic OR for op_or();
         mnemonic LT for lt();

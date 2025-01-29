@@ -14,17 +14,66 @@ function div(arg1 as int, arg2 as int) as int
     arg1 / arg2;
 end function
 
+function read_num() as int
+    dim in as int
+    dim res as int
+    dim i as int
+    res = 0;
+    i = 1;
+    while 1
+        in = stdin();
+        if in == 13 then
+            stdin();
+            break
+        end if
+        res = res * 10 + (in - 48);
+        i = i + 1;
+    wend
+    res;
+end function
+
+function number_length(num as int) as int
+    dim rest as int
+    dim count as int
+    count = 1;
+    rest = num/10;
+    while rest != 0
+        rest = rest/10;
+        count = count + 1;
+    wend
+    count;
+end function
+
+function print_num(num as int) as int
+    dim rest as int
+    dim count as int
+    dim shift as int
+    rest = num;
+    count = number_length(num) - 1;
+    shift = 1;
+    while count != 0
+        shift = shift * 10;
+        count = count - 1;
+    wend
+    while shift != 0
+        stdout(rest / shift + 48);
+        rest = rest % shift;
+        shift = shift / 10;
+    wend
+    0;
+end function
+
 function main()
     dim a as int
     dim b as int
     dim op as int
     dim res as int
     while 1
-        a = stdin() - 48;
+        a = read_num();
         op = stdin();
-        b = stdin() - 48;
         stdin();
         stdin();
+        b = read_num();
         if op == 43 then
             res = sum(a, b);
         end if
@@ -37,7 +86,7 @@ function main()
         if op == 47 then
             res = div(a, b);
         end if
-        stdout(res + 48);
+        print_num(res);
         stdout(10);
         stdout(13);
     wend
