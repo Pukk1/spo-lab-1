@@ -20,7 +20,7 @@ function read_num() as int
     dim i as int
     res = 0;
     i = 1;
-    while 1
+    while true
         in = stdin();
         if in == 13 then
             stdin();
@@ -60,6 +60,8 @@ function print_num(num as int) as int
         rest = rest % shift;
         shift = shift / 10;
     wend
+    stdout(10);
+    stdout(13);
     0;
 end function
 
@@ -68,7 +70,7 @@ function main()
     dim b as int
     dim op as int
     dim res as int
-    while 1
+    while true
         a = read_num();
         op = stdin();
         stdin();
@@ -87,7 +89,5 @@ function main()
             res = div(a, b);
         end if
         print_num(res);
-        stdout(10);
-        stdout(13);
     wend
 end function
