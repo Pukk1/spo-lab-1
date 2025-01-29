@@ -76,16 +76,16 @@ function main()
         stdin();
         stdin();
         b = read_num();
-        if op == 43 then
+        if op == '+' then
             res = sum(a, b);
         end if
-        if op == 45 then
+        if op == '-' then
             res = sub(a, b);
         end if
-        if op == 42 then
+        if op == '*' then
             res = mul(a, b);
         end if
-        if op == 47 then
+        if op == '/' then
             res = div(a, b);
         end if
         print_num(res);

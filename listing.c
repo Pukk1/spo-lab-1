@@ -134,9 +134,25 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, Array
         fprintln("PUSH 0", listingFile);
         fprintln("PUSH 0", listingFile);
     } else if (!strcmp(operationType, "CONST")) {
-//        TODO("переделать на нормальную типизацию)
-        fprintlnWithArg("PUSH", "1", listingFile);
-        fprintlnWithArg("PUSH", operationTree->childNodes[1]->value, listingFile);
+        if (!strcmp(operationTree->childNodes[0]->value, "int")) {
+            fprintlnWithArg("PUSH", "1", listingFile);
+            fprintlnWithArg("PUSH", operationTree->childNodes[1]->value, listingFile);
+        } else if (!strcmp(operationTree->childNodes[0]->value, "char")) {
+            char type[1];
+            sprintf(type, "%d", (int) operationTree->childNodes[1]->value[0]);
+            fprintlnWithArg("PUSH", "3", listingFile);
+            fprintlnWithArg("PUSH", type, listingFile);
+        } else if (!strcmp(operationTree->childNodes[0]->value, "bool")) {
+            if (!strcmp(operationTree->childNodes[1]->value, "true")) {
+                fprintlnWithArg("PUSH", "1", listingFile);
+                fprintlnWithArg("PUSH", "1", listingFile);
+            } else {
+                fprintlnWithArg("PUSH", "1", listingFile);
+                fprintlnWithArg("PUSH", "0", listingFile);
+            }
+        } else {
+            fprintln("EXCEPTION", listingFile);
+        }
     } else if (!strcmp(operationType, "SET")) {
         tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);
         ValuePlaceAssociation *valuePlace = findValuePlace(valuePlaceAssociations, operationTree->childNodes[0]->value);
