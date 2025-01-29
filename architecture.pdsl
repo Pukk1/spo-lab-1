@@ -71,12 +71,14 @@ architecture spo309681 {
             IP = IP + 4;
         };
 
-//TODO
         instruction save = { 0000 0000 0000 0111 } {
             let value = ram:8[SP];
             SP = SP + 8;
+            let type = ram:8[SP];
+            SP = SP + 8;
             let addr = ram:8[SP];
-            ram:8[addr] = value;
+            ram:8[addr] = type;
+            ram:8[addr + 8] = value;
             IP = IP + 2;
         };
 
@@ -279,11 +281,12 @@ architecture spo309681 {
             BP = oldbp;
         };
 
-//TODO
         instruction alloc = { 1110 0000 0000 0000, imm64 as byte_size } {
             SP = SP - 8;
+            ram:8[SP] = 4;
+            SP = SP - 8;
             ram:8[SP] = HP;
-            HP = HP + byte_size;
+            HP = HP + byte_size * 8;
             IP = IP + 10;
         };
 

@@ -14,8 +14,8 @@
 }
 \"[^\"\\]*(?:\\.[^\"\\]*)*\" {
     char buffer[1024];
-    strncpy(buffer, yytext+1, strlen(yytext)-1);
-    buffer[strlen(buffer)-1] = 0;
+    strncpy(buffer, yytext + 1, strlen(yytext));
+    buffer[strlen(buffer) - 1] = 0;
     yylval.node = createNode("STR", NULL, buffer);
     return STR;
 }

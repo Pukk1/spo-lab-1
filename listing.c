@@ -138,10 +138,10 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, Array
             fprintlnWithArg("PUSH", "1", listingFile);
             fprintlnWithArg("PUSH", operationTree->childNodes[1]->value, listingFile);
         } else if (!strcmp(operationTree->childNodes[0]->value, "char")) {
-            char type[1];
-            sprintf(type, "%d", (int) operationTree->childNodes[1]->value[0]);
+            char value[1];
+            sprintf(value, "%d", (int) operationTree->childNodes[1]->value[0]);
             fprintlnWithArg("PUSH", "3", listingFile);
-            fprintlnWithArg("PUSH", type, listingFile);
+            fprintlnWithArg("PUSH", value, listingFile);
         } else if (!strcmp(operationTree->childNodes[0]->value, "bool")) {
             if (!strcmp(operationTree->childNodes[1]->value, "true")) {
                 fprintlnWithArg("PUSH", "1", listingFile);
@@ -150,6 +150,41 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, Array
                 fprintlnWithArg("PUSH", "1", listingFile);
                 fprintlnWithArg("PUSH", "0", listingFile);
             }
+        } else if (!strcmp(operationTree->childNodes[0]->value, "str")) {
+            char *str = operationTree->childNodes[1]->value;
+            int str_len = strlen(str);
+            char alloc_size[30];
+            sprintf(alloc_size, "%d", str_len);
+            fprintlnWithArg("ALLOC", alloc_size, listingFile);
+            for (int i = 0; i < str_len; ++i) {
+                char shift[30];
+                sprintf(shift, "%d", 8 * 2 * i);
+                fprintlnWithArg("PUSH", "1", listingFile);
+                fprintlnWithArg("PUSH", shift, listingFile);
+                fprintln("SUM", listingFile);
+                char value[30];
+                sprintf(value, "%d", (int) operationTree->childNodes[1]->value[i]);
+                fprintlnWithArg("PUSH", "3", listingFile);
+                fprintlnWithArg("PUSH", value, listingFile);
+//                возвращает индекс, в который записал значение
+                fprintln("SAVE", listingFile);
+                fprintlnWithArg("PUSH", "1", listingFile);
+//                возврат на адрес начала
+                fprintlnWithArg("PUSH", shift, listingFile);
+                fprintln("SUB", listingFile);
+            }
+            char shift[30];
+            sprintf(shift, "%d", 8 * 2 * str_len);
+            fprintlnWithArg("PUSH", "1", listingFile);
+            fprintlnWithArg("PUSH", shift, listingFile);
+            fprintln("SUM", listingFile);
+            fprintlnWithArg("PUSH", "3", listingFile);
+            fprintlnWithArg("PUSH", "0", listingFile);
+            fprintln("SAVE", listingFile);
+            fprintlnWithArg("PUSH", "1", listingFile);
+            fprintlnWithArg("PUSH", shift, listingFile);
+            fprintln("SUB", listingFile);
+
         } else {
             fprintln("EXCEPTION", listingFile);
         }
