@@ -86,9 +86,21 @@
  yylval.node = createNode("FUNCTION", NULL, "");
  return FUNCTION;
  }
+"class"                                {
+ yylval.node = createNode("CLASS", NULL, "");
+ return CLASS;
+ }
 "end"                                {
  yylval.node = createNode("END", NULL, "");
  return END;
+ }
+"public"                                {
+ yylval.node = createNode("PUBLIC", NULL, "");
+ return PUBLIC;
+ }
+"private"                                {
+ yylval.node = createNode("PRIVATE", NULL, "");
+ return PRIVATE;
  }
 "else"                              {
  yylval.node = createNode("ELSE", NULL, "");

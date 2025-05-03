@@ -16,6 +16,9 @@
 %token <node> AND OR NOT
 %token <node> DECREMENT INCREMENT
 %token <node> FUNCTION
+%token <node> CLASS
+%token <node> PUBLIC
+%token <node> PRIVATE
 %token <node> AS
 %token <node> ARRAY
 %token <node> DEF END BEGIN_BLOCK
@@ -78,13 +81,19 @@
 %type <node> whileOrUntil
 %type <node> arrayCommas
 %type <node> funcDef
+%type <node> classDef
+%type <node> classMember
+%type <node> classMemberDef
+%type <node> classMemberModifier
+%type <node> listClassMember
 
 %%
 /* SourceItem */
 
 source: listSourceItem      {{TreeNode* elements[] = {$1};$$ = createNode("source", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-sourceItem: funcDef         {{TreeNode* elements[] = {$1};$$ = createNode("sourceItem", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+sourceItem: funcDef         {{TreeNode* elements[] = {$1};$$ = createNode("sourceItem", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | classDef              {{TreeNode* elements[] = {$1};$$ = createNode("sourceItem", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 listSourceItem:             {{$$ = NULL;}}
     | sourceItem listSourceItem     {{TreeNode* elements[] = {$1, $2}; $$ = createNode("listSourceItem", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
@@ -105,6 +114,21 @@ argDef: IDENTIFIER optionalTypeRef  {{TreeNode* elements[] = {$1, $2};$$ = creat
 
 optionalTypeRef:            {{ $$ = NULL; }}
     | AS typeRef            {{$$ = $2;}};
+
+
+/* Class */
+classDef: CLASS IDENTIFIER listClassMember END CLASS {{TreeNode* elements[] = {$2, $3}; $$ = createNode("classDef", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+
+classMember: classMemberModifier classMemberDef {{TreeNode* elements[] = {$1, $2}; $$ = createNode("classMember", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+
+classMemberDef: var {{TreeNode* elements[] = {$1}; $$ = createNode("classField", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | funcDef {{TreeNode* elements[] = {$1}; $$ = createNode("classFunc", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+
+classMemberModifier: PRIVATE {{;$$ = createNode("private", NULL, "");}}
+    | PUBLIC {{;$$ = createNode("public", NULL, "");}};
+
+listClassMember: {{$$ = NULL;}}
+    | classMember listClassMember   {{TreeNode* elements[] = {$1, $2};$$ = createNode("listClassMember", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 
 
