@@ -90,6 +90,14 @@
  yylval.node = createNode("CLASS", NULL, "");
  return CLASS;
  }
+"this"                                {
+ yylval.node = createNode("THIS", NULL, "");
+ return THIS;
+ }
+"super"                                {
+ yylval.node = createNode("SUPER", NULL, "");
+ return SUPER;
+ }
 "end"                                {
  yylval.node = createNode("END", NULL, "");
  return END;
@@ -151,6 +159,9 @@
 ","                                 {
  yylval.node = createNode("COMMA", NULL, "");
  return COMMA;
+ }
+"."                                 {
+ return DOT;
  }
 "!="                                {
  return NOTEQUAL;

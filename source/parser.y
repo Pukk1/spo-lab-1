@@ -11,12 +11,14 @@
     TreeNode* node;
 }
 
-%token <node> SUM SUB MUL DIV SLASH PERCENT SET NOTEQUAL EQUALITY
+%token <node> SUM SUB MUL DIV SLASH PERCENT SET NOTEQUAL EQUALITY DOT
 %token <node> LESSTHAN GREATERTHAN LESSTHANEQ GREATERTHANEQ
 %token <node> AND OR NOT
 %token <node> DECREMENT INCREMENT
 %token <node> FUNCTION
 %token <node> CLASS
+%token <node> THIS
+%token <node> SUPER
 %token <node> PUBLIC
 %token <node> PRIVATE
 %token <node> AS
@@ -66,7 +68,10 @@
 %type <node> listArgDef
 %type <node> optionalTypeRef
 %type <node> literal
-%type <node> place
+%type <node> placeChain
+%type <node> firstPlaceChainNode
+%type <node> followingPlaceChainNode
+%type <node> currentObjectLink
 %type <node> expr
 %type <node> listExpr
 %type <node> callOrIndexer
@@ -184,7 +189,7 @@ expr: unary                 {{$$ = $1;}}
     | binary                {{$$ = $1;}}
     | braces                {{$$ = $1;}}
     | callOrIndexer         {{$$ = $1;}}
-    | place                 {{$$ = $1;}}
+    | placeChain            {{$$ = $1;}}
     | literal               {{$$ = $1;}};
 
 binary: expr SET expr     {{TreeNode* elements[] = {$1, $3};$$ = createNode("SET", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
@@ -213,9 +218,19 @@ callOrIndexer: expr LPAREN listExpr RPAREN  {{TreeNode* elements[] = {$1, $3};$$
 
 listExpr:                   {{$$ = NULL;}}
     | expr listExpr         {{TreeNode* elements[] = {$1, $2};$$ = createNode("listExpr", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
-    | expr COMMA listExpr   {{TreeNode* elements[] = {$1, $3};$$ = createNode("listExpr", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | expr COMMA listExpr   {{TreeNode* elements[] = {$1, $3};$$ = createNode("listExpr", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-place: IDENTIFIER           {{$$ = $1;}};
+placeChain: firstPlaceChainNode                         {{TreeNode* elements[] = {$1};$$ = createNode("placeChain", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | firstPlaceChainNode DOT followingPlaceChainNode   {{TreeNode* elements[] = {$1, $3};$$ = createNode("placeChian", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+
+firstPlaceChainNode: IDENTIFIER                     {{$$ = $1;}}
+    | currentObjectLink                             {{$$ = $1;}};
+
+followingPlaceChainNode: IDENTIFIER                 {{TreeNode* elements[] = {$1};$$ = createNode("placeChian", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+    | IDENTIFIER DOT followingPlaceChainNode        {{TreeNode* elements[] = {$1, $3};$$ = createNode("placeChian", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+
+currentObjectLink: THIS                             {{TreeNode* elements[] = {$1};$$ = createNode("CURRENT_OBJECT_LINK", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
+    | SUPER                                         {{TreeNode* elements[] = {$1};$$ = createNode("CURRENT_OBJECT_LINK", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 literal: BOOL               {{$$ = $1;}}
     | STR                   {{$$ = $1;}}
