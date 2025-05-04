@@ -4,6 +4,7 @@
 
 #include "execution.h"
 #include <string.h>
+#include <stdbool.h>
 
 typedef struct FunCalls FunCalls;
 
@@ -198,6 +199,23 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
 
     if (!strcmp(parsingTree->type, "braces")) {
         return operationTreeNode(parsingTree->childNodes[0], funCalls);
+    } else if (!strcmp(parsingTree->type, "placeChain")) {
+        bool includingField = false;
+//            нужно ли считать поле или локальную переменную
+        if(parsingTree->childrenNumber > 1) {
+            includingField = true;
+            node = mallocTreeNode("READ", NULL, 2);
+        } else {
+            node = mallocTreeNode("READ", NULL, 1);
+        }
+        char valuePlace[1024];
+        sprintf(valuePlace,
+                "%s",
+                parsingTree->childNodes[0]->value);
+        node->childNodes[0] = mallocTreeNode(NULL, valuePlace, 0);
+        if(includingField) {
+            node->childNodes[1] = operationTreeNode(parsingTree->childNodes[1], funCalls);
+        }
     } else if (!strcmp(parsingTree->type, "INCREMENT") || !strcmp(parsingTree->type, "DECREMENT")) {
         node = mallocTreeNode("SET", NULL, 2);
         char valuePlace[1024];
@@ -222,9 +240,8 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
                 node->childNodes[i + 1] = operationTreeNode(argsArray.elements[i], funCalls);
             }
         }
-        char executionName[1024];
-        sprintf(executionName, "%s", parsingTree->childNodes[0]->value);
-        node->childNodes[0] = mallocTreeNode(NULL, executionName, 0);
+        node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0], funCalls);
+
         char funCallOperationIdNodeString[1024];
         sprintf(funCallOperationIdNodeString, "%d", node->id);
         TreeNode *funCallOperationIdNode = mallocTreeNode("operationTreeId", funCallOperationIdNodeString, 1);
@@ -232,48 +249,30 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
         funCallOperationIdNode->childNodes[0] = calledFunNameNode;
         addToList(funCalls->funCalls, funCallOperationIdNode);
     } else if (parsingTree->childrenNumber == 2) {
+//        SET и ещё что-то
         node = mallocTreeNode(parsingTree->type, parsingTree->value, parsingTree->childrenNumber);
-
-        if (!strcmp(parsingTree->type, "SET")) {
-            char valuePlace[1024];
-            sprintf(valuePlace,
-                    "%s",
-                    parsingTree->childNodes[0]->value);
-            node->childNodes[0] = mallocTreeNode(NULL, valuePlace, 0);
-            node->childNodes[1] = operationTreeNode(parsingTree->childNodes[1], funCalls);
-        } else {
-            node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0], funCalls);
-            node->childNodes[1] = operationTreeNode(parsingTree->childNodes[1], funCalls);
-        }
+        node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0], funCalls);
+        node->childNodes[1] = operationTreeNode(parsingTree->childNodes[1], funCalls);
     } else if (parsingTree->childrenNumber == 0) {
-        if (!strcmp(parsingTree->type, "IDENTIFIER")) {
-            node = mallocTreeNode("READ", NULL, 1);
-            char valuePlace[1024];
-            sprintf(valuePlace,
-                    "%s",
-                    parsingTree->value);
-            node->childNodes[0] = mallocTreeNode(NULL, valuePlace, 0);
-        } else {
-            node = mallocTreeNode("CONST", NULL, 2);
-            char *typeByLiteral = "";
-            if (!strcmp(parsingTree->type, "DEC")) {
-                typeByLiteral = "int";
-            } else if (!strcmp(parsingTree->type, "BIN")) {
-                typeByLiteral = "int";
-            } else if (!strcmp(parsingTree->type, "HEX")) {
-                typeByLiteral = "int";
-            } else if (!strcmp(parsingTree->type, "CHAR")) {
-                typeByLiteral = "char";
-            } else if (!strcmp(parsingTree->type, "STR")) {
-                typeByLiteral = "str";
-            } else if (!strcmp(parsingTree->type, "BOOL")) {
-                typeByLiteral = "bool";
-            }
-            char constVal[1024];
-            sprintf(constVal, "%s", typeByLiteral);
-            node->childNodes[0] = mallocTreeNode(NULL, typeByLiteral, 0);
-            node->childNodes[1] = mallocTreeNode(NULL, parsingTree->value, 0);
+        node = mallocTreeNode("CONST", NULL, 2);
+        char *typeByLiteral = "";
+        if (!strcmp(parsingTree->type, "DEC")) {
+            typeByLiteral = "int";
+        } else if (!strcmp(parsingTree->type, "BIN")) {
+            typeByLiteral = "int";
+        } else if (!strcmp(parsingTree->type, "HEX")) {
+            typeByLiteral = "int";
+        } else if (!strcmp(parsingTree->type, "CHAR")) {
+            typeByLiteral = "char";
+        } else if (!strcmp(parsingTree->type, "STR")) {
+            typeByLiteral = "str";
+        } else if (!strcmp(parsingTree->type, "BOOL")) {
+            typeByLiteral = "bool";
         }
+        char constVal[1024];
+        sprintf(constVal, "%s", typeByLiteral);
+        node->childNodes[0] = mallocTreeNode(NULL, typeByLiteral, 0);
+        node->childNodes[1] = mallocTreeNode(NULL, parsingTree->value, 0);
     }
     return node;
 }
@@ -477,10 +476,9 @@ ExecutionNode *initGraph(TreeNode *sourceItem, FunCalls *funCalls) {
     return startNode;
 }
 
-SourceItemExecution *sourceItemExecutionGraph(char *filename, TreeNode *sourceItemElement) {
+SourceItemExecution *funExecutionGraph(char *filename, TreeNode *sourceItemElement) {
     SourceItemExecution *sourceItemExecution = malloc(sizeof(SourceItemExecution));
     sourceItemExecution->filename = filename;
-//    if (sourceItemElement->childNodes[0]->type) {}
     sourceItemExecution->name = sourceItemElement->childNodes[0]->childNodes[0]->value;
 
     void **nodes = malloc(sizeof(TreeNode *) * START_ARRAY_SIZE);
@@ -498,6 +496,15 @@ SourceItemExecution *sourceItemExecutionGraph(char *filename, TreeNode *sourceIt
     return sourceItemExecution;
 }
 
+//void classExecutionsGraphs(char *filename, TreeNode *sourceItemElement, Array *funExecutionsResultArray) {
+//    SourceItemExecution *classExecution = malloc(sizeof(SourceItemExecution));
+//    classExecution->filename = filename;
+//    char classExecutionName[1024];
+//    strcpy(classExecutionName, filename);
+//    strcat(classExecutionName, sourceItemElement->childNodes[0]->childNodes[0]->value);
+//    classExecution->name = mallocString(classExecutionName);
+//}
+
 void initExceptions() {
     void **nodes = malloc(sizeof(char *) * START_ARRAY_SIZE);
     exceptions = (Array) {START_ARRAY_SIZE, 0, nodes};
@@ -512,11 +519,16 @@ Array *executionGraph(FilenameParseTree *input, int size) {
 
     for (int i = 0; i < size; ++i) {
         initExceptions();
-        TreeNode *sourceNode = findSourceNode(input[i]);
-        Array sourceItems = findSourceItems(sourceNode);
+        FilenameParseTree currentFileParseTree = input[i];
+        Array sourceItems = findSourceItems(findSourceNode(currentFileParseTree));
         for (int j = 0; j < sourceItems.nextPosition; ++j) {
-            void *sourceItemExecution = sourceItemExecutionGraph(input[i].filename, sourceItems.elements[j]);
-            addToList(result, sourceItemExecution);
+            TreeNode *sourceItem = sourceItems.elements[j];
+            if (!strcmp(sourceItem->childNodes[0]->type, "funcDef")) {
+                void *sourceItemExecution = funExecutionGraph(currentFileParseTree.filename, sourceItem);
+                addToList(result, sourceItemExecution);
+            } else {
+//                classExecutionsGraphs(currentFileParseTree.filename, sourceItem, result);
+            }
         }
     }
     return result;

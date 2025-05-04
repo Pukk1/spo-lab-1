@@ -1,13 +1,13 @@
-class calculator
-    public function sum(arg1 as int, arg2 as int) as int
-        arg1 + arg2;
-    end function
-
-    public function sub(arg1 as int, arg2 as int) as int
-        arg1 - arg2;
+class ASD
+    public dim a as int
+    public function asd()
     end function
 end class
 
 function main()
-
+    dim b as ASD
+    b;
+    this.asd();
+    b.sada();
+    b.a = 10;
 end function

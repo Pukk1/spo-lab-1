@@ -221,16 +221,16 @@ listExpr:                   {{$$ = NULL;}}
     | expr COMMA listExpr   {{TreeNode* elements[] = {$1, $3};$$ = createNode("listExpr", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 placeChain: firstPlaceChainNode                         {{TreeNode* elements[] = {$1};$$ = createNode("placeChain", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
-    | firstPlaceChainNode DOT followingPlaceChainNode   {{TreeNode* elements[] = {$1, $3};$$ = createNode("placeChian", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+    | firstPlaceChainNode DOT followingPlaceChainNode   {{TreeNode* elements[] = {$1, $3};$$ = createNode("placeChain", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 firstPlaceChainNode: IDENTIFIER                     {{$$ = $1;}}
     | currentObjectLink                             {{$$ = $1;}};
 
-followingPlaceChainNode: IDENTIFIER                 {{TreeNode* elements[] = {$1};$$ = createNode("placeChian", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
-    | IDENTIFIER DOT followingPlaceChainNode        {{TreeNode* elements[] = {$1, $3};$$ = createNode("placeChian", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+followingPlaceChainNode: IDENTIFIER                 {{TreeNode* elements[] = {$1};$$ = createNode("placeChain", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+    | IDENTIFIER DOT followingPlaceChainNode        {{TreeNode* elements[] = {$1, $3};$$ = createNode("placeChain", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-currentObjectLink: THIS                             {{TreeNode* elements[] = {$1};$$ = createNode("CURRENT_OBJECT_LINK", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
-    | SUPER                                         {{TreeNode* elements[] = {$1};$$ = createNode("CURRENT_OBJECT_LINK", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+currentObjectLink: THIS                             {{TreeNode* elements[] = {$1};$$ = createNode("CURRENT_OBJECT_LINK", NULL, elements[0]->type);}}
+    | SUPER                                         {{TreeNode* elements[] = {$1};$$ = createNode("CURRENT_OBJECT_LINK", NULL, elements[0]->type);}};
 
 literal: BOOL               {{$$ = $1;}}
     | STR                   {{$$ = $1;}}
