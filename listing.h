@@ -17,7 +17,6 @@ struct ListingNode {
 
 struct ValuePlaceAssociation {
     char *name;
-    char *type;
     int shiftPosition;
 };
 

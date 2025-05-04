@@ -41,7 +41,7 @@ void tryPlaceLabel(ExecutionNode *executionNode, int *labelCounter, bool necessa
 void placeLabels(Array *funExecutions) {
     int labelCounter = 0;
     for (int i = 0; i < funExecutions->nextPosition; ++i) {
-        FunExecution *funExecution = funExecutions->elements[i];
+        SourceItemExecution *funExecution = funExecutions->elements[i];
         tryPlaceLabel(funExecution->nodes, &labelCounter, false);
     }
 }
@@ -82,7 +82,6 @@ ValuePlaceAssociation *addArgumentPlace(Array *valuePlaceAssociations, char *arg
         }
         ValuePlaceAssociation *newArgAssociation = malloc(sizeof(ValuePlaceAssociation));
         newArgAssociation->name = argName;
-        newArgAssociation->type = argType;
         newArgAssociation->shiftPosition = -2;
         addToList(valuePlaceAssociations, newArgAssociation);
         return newArgAssociation;
@@ -99,7 +98,6 @@ ValuePlaceAssociation *addValuePlace(Array *valuePlaceAssociations, char *valueP
     } else {
         ValuePlaceAssociation *newAssociation = malloc(sizeof(ValuePlaceAssociation));
         newAssociation->name = valuePlaceName;
-        newAssociation->type = valuePlaceType;
         ValuePlaceAssociation *lastElement = NULL;
         if (valuePlaceAssociations->nextPosition > 0) {
             lastElement = valuePlaceAssociations->elements[valuePlaceAssociations->nextPosition - 1];
@@ -154,7 +152,7 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, Array
             char *str = operationTree->childNodes[1]->value;
             int str_len = strlen(str);
             char alloc_size[30];
-            sprintf(alloc_size, "%d", str_len);
+            sprintf(alloc_size, "%d", str_len * 2 + 2);
             fprintlnWithArg("ALLOC", alloc_size, listingFile);
             for (int i = 0; i < str_len; ++i) {
                 char shift[30];
@@ -163,13 +161,13 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, Array
                 fprintlnWithArg("PUSH", shift, listingFile);
                 fprintln("SUM", listingFile);
                 char value[30];
-                sprintf(value, "%d", (int) operationTree->childNodes[1]->value[i]);
+                sprintf(value, "%d", (int) str[i]);
                 fprintlnWithArg("PUSH", "3", listingFile);
                 fprintlnWithArg("PUSH", value, listingFile);
 //                возвращает индекс, в который записал значение
                 fprintln("SAVE", listingFile);
-                fprintlnWithArg("PUSH", "1", listingFile);
 //                возврат на адрес начала
+                fprintlnWithArg("PUSH", "1", listingFile);
                 fprintlnWithArg("PUSH", shift, listingFile);
                 fprintln("SUB", listingFile);
             }
@@ -309,7 +307,7 @@ void printListing(Array *funExecutions, FILE *listingFile) {
         valuePlaceAssociationsArray->size = 100;
         valuePlaceAssociationsArray->nextPosition = 0;
         valuePlaceAssociationsArray->elements = malloc(sizeof(ValuePlaceAssociation) * 100);
-        FunExecution *funExecution = funExecutions->elements[i];
+        SourceItemExecution *funExecution = funExecutions->elements[i];
         char funLabel[1000];
         sprintf(funLabel, "%s:", funExecution->name);
         fprintln(funLabel, listingFile);

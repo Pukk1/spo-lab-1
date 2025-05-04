@@ -477,13 +477,34 @@ ExecutionNode *initGraph(TreeNode *sourceItem, FunCalls *funCalls) {
     return startNode;
 }
 
+SourceItemExecution *sourceItemExecutionGraph(char *filename, TreeNode *sourceItemElement) {
+    SourceItemExecution *sourceItemExecution = malloc(sizeof(SourceItemExecution));
+    sourceItemExecution->filename = filename;
+//    if (sourceItemElement->childNodes[0]->type) {}
+    sourceItemExecution->name = sourceItemElement->childNodes[0]->childNodes[0]->value;
+
+    void **nodes = malloc(sizeof(TreeNode *) * START_ARRAY_SIZE);
+    Array funs = (Array) {START_ARRAY_SIZE, 0, nodes};
+    FunCalls funCalls = (FunCalls) {&funs, sourceItemExecution->name};
+    sourceItemExecution->nodes = initGraph(sourceItemElement, &funCalls);
+    TreeNode *funCallsRoot = mallocTreeNode("currentFunction", sourceItemExecution->name,
+                                            funCalls.funCalls->nextPosition);
+    for (int k = 0; k < funCalls.funCalls->nextPosition; ++k) {
+        funCallsRoot->childNodes[k] = funCalls.funCalls->elements[k];
+    }
+    sourceItemExecution->funCalls = funCallsRoot;
+    sourceItemExecution->errorsCount = exceptions.nextPosition;
+    sourceItemExecution->errors = exceptions.elements;
+    return sourceItemExecution;
+}
+
 void initExceptions() {
     void **nodes = malloc(sizeof(char *) * START_ARRAY_SIZE);
     exceptions = (Array) {START_ARRAY_SIZE, 0, nodes};
 }
 
 Array *executionGraph(FilenameParseTree *input, int size) {
-    void **resultNodes = malloc(sizeof(FunExecution *) * START_ARRAY_SIZE);
+    void **resultNodes = malloc(sizeof(SourceItemExecution * ) * START_ARRAY_SIZE);
     Array *result = malloc(sizeof(Array));
     result->size = START_ARRAY_SIZE;
     result->nextPosition = 0;
@@ -494,28 +515,8 @@ Array *executionGraph(FilenameParseTree *input, int size) {
         TreeNode *sourceNode = findSourceNode(input[i]);
         Array sourceItems = findSourceItems(sourceNode);
         for (int j = 0; j < sourceItems.nextPosition; ++j) {
-            FunExecution *currentFunExecution = malloc(sizeof(FunExecution));
-            currentFunExecution->filename = input[i].filename;
-            TreeNode **currentSourceItemElements =
-                    ((TreeNode **) sourceItems.elements);
-            currentFunExecution->name =
-                    currentSourceItemElements[j]->childNodes[0]->childNodes[0]->value;
-            currentFunExecution->signature =
-                    currentSourceItemElements[j]->childNodes[0];
-
-            void **nodes = malloc(sizeof(TreeNode *) * START_ARRAY_SIZE);
-            Array funs = (Array) {START_ARRAY_SIZE, 0, nodes};
-            FunCalls funCalls = (FunCalls) {&funs, currentFunExecution->name};
-            currentFunExecution->nodes = initGraph(currentSourceItemElements[j], &funCalls);
-            TreeNode *funCallsRoot = mallocTreeNode("currentFunction", currentFunExecution->name,
-                                                    funCalls.funCalls->nextPosition);
-            for (int k = 0; k < funCalls.funCalls->nextPosition; ++k) {
-                funCallsRoot->childNodes[k] = funCalls.funCalls->elements[k];
-            }
-            currentFunExecution->funCalls = funCallsRoot;
-            currentFunExecution->errorsCount = exceptions.nextPosition;
-            currentFunExecution->errors = exceptions.elements;
-            addToList(result, currentFunExecution);
+            void *sourceItemExecution = sourceItemExecutionGraph(input[i].filename, sourceItems.elements[j]);
+            addToList(result, sourceItemExecution);
         }
     }
     return result;
@@ -622,7 +623,7 @@ void printExecutionGraphToFile(ExecutionNode *executionNode, FILE *outputOperati
     fprintf(outputExecutionFile, "\n");
 }
 
-void printExecution(FunExecution *funExecution, FILE *outputFunCallFile, FILE *outputOperationTreesFile,
+void printExecution(SourceItemExecution *funExecution, FILE *outputFunCallFile, FILE *outputOperationTreesFile,
                     FILE *outputExecutionFile) {
     printTreeNode(funExecution->funCalls, outputFunCallFile);
     printExecutionGraphToFile(funExecution->nodes, outputOperationTreesFile, outputExecutionFile);

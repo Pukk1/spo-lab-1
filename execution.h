@@ -9,7 +9,7 @@
 
 typedef struct FilenameParseTree FilenameParseTree;
 typedef struct ExecutionNode ExecutionNode;
-typedef struct FunExecution FunExecution;
+typedef struct SourceItemExecution SourceItemExecution;
 typedef struct Array Array;
 typedef struct ListingNode ListingNode;
 
@@ -29,10 +29,9 @@ struct Array {
     void **elements;
 };
 
-struct FunExecution {
+struct SourceItemExecution {
     char *name;
     char *filename;
-    TreeNode *signature;
     TreeNode *funCalls;
     ExecutionNode *nodes;
     char **errors;
@@ -46,7 +45,7 @@ struct FilenameParseTree {
 
 Array *executionGraph(FilenameParseTree *input, int size);
 
-void printExecution(FunExecution *funExecution, FILE *outputFunCallFile, FILE *outputOperationTreesFile,
+void printExecution(SourceItemExecution *funExecution, FILE *outputFunCallFile, FILE *outputOperationTreesFile,
                     FILE *outputExecutionFile);
 void addToList(Array *currentArray, void *element);
 
