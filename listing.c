@@ -187,29 +187,42 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
             fprintln("EXCEPTION", listingFile);
         }
     } else if (!strcmp(operationType, "SET")) {
-        tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);
-        ValuePlaceAssociation *valuePlace = findValuePlace(valuePlaceAssociations, operationTree->childNodes[0]->value);
-        if (valuePlace == NULL) {
-            char exceptionMessage[1000];
-            sprintf(exceptionMessage, "value place not found by name %s", operationTree->childNodes[0]->value);
-            printException(exceptionMessage);
-            return;
+        List readPlaces = findListItemsUtil(operationTree->childNodes[0]);
+        if(readPlaces.size == 1) {
+            char *readPlace = ((TreeNode *) readPlaces.elements[0])->value;
+            tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations,
+                                      argumentNumber);
+            ValuePlaceAssociation *valuePlace = findValuePlace(valuePlaceAssociations,
+                                                               readPlace);
+            if (valuePlace == NULL) {
+                char exceptionMessage[1000];
+                sprintf(exceptionMessage, "value place not found by name %s", readPlace);
+                printException(exceptionMessage);
+                return;
+            }
+            char valuePlaceShift[1000];
+            sprintf(valuePlaceShift, "%d", valuePlace->shiftPosition);
+            fprintlnWithArg("SAVE_BP", valuePlaceShift, listingFile);
+        } else {
+//            TODO
         }
-        char valuePlaceShift[1000];
-        sprintf(valuePlaceShift, "%d", valuePlace->shiftPosition);
-        fprintlnWithArg("SAVE_BP", valuePlaceShift, listingFile);
     } else if (!strcmp(operationType, "READ")) {
-//        findListItemsUtil
-        ValuePlaceAssociation *valuePlace = findValuePlace(valuePlaceAssociations, operationTree->childNodes[0]->value);
-        if (valuePlace == NULL) {
-            char exceptionMessage[1000];
-            sprintf(exceptionMessage, "value place not found by name %s", operationTree->childNodes[0]->value);
-            printException(exceptionMessage);
-            return;
+        List readPlaces = findListItemsUtil(operationTree->childNodes[0]);
+        if(readPlaces.size == 1) {
+            char *readPlace = ((TreeNode *)readPlaces.elements[0])->value;
+            ValuePlaceAssociation *valuePlace = findValuePlace(valuePlaceAssociations,readPlace);
+            if (valuePlace == NULL) {
+                char exceptionMessage[1000];
+                sprintf(exceptionMessage, "value place not found by name %s", readPlace);
+                printException(exceptionMessage);
+                return;
+            }
+            char valuePlaceShift[1000];
+            sprintf(valuePlaceShift, "%d", valuePlace->shiftPosition);
+            fprintlnWithArg("LOAD_BP", valuePlaceShift, listingFile);
+        } else {
+//            TODO
         }
-        char valuePlaceShift[1000];
-        sprintf(valuePlaceShift, "%d", valuePlace->shiftPosition);
-        fprintlnWithArg("LOAD_BP", valuePlaceShift, listingFile);
     } else if (!strcmp(operationType, "EQUALITY")) {
         tryPrintOperationTreeNode(operationTree->childNodes[0], listingFile, valuePlaceAssociations, argumentNumber);
         tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);
@@ -239,23 +252,28 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
         tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);
         fprintln("MOD", listingFile);
     } else if (!strcmp(operationType, "EXECUTE")) {
-//        List readPlaces = findListItemsUtil(operationTree->childNodes[0]);
-        if (!strcmp(operationTree->childNodes[0]->value, "stdin")) {
-            fprintln("LOAD_IN", listingFile);
-        } else if (!strcmp(operationTree->childNodes[0]->value, "stdout")) {
-            tryPrintOperationTreeNode(
-                    operationTree->childNodes[1],
-                    listingFile,
-                    valuePlaceAssociations,
-                    argumentNumber
-            );
-            fprintln("SAVE_OUT", listingFile);
-        } else {
-            for (int i = 1; i < operationTree->childrenNumber; ++i) {
-                tryPrintOperationTreeNode(operationTree->childNodes[i], listingFile, valuePlaceAssociations,
-                                          argumentNumber);
+        List readPlaces = findListItemsUtil(operationTree->childNodes[0]);
+        if(readPlaces.size == 1) {
+            char *readPlace = ((TreeNode *)readPlaces.elements[0])->value;
+            if (!strcmp(readPlace, "stdin")) {
+                fprintln("LOAD_IN", listingFile);
+            } else if (!strcmp(readPlace, "stdout")) {
+                tryPrintOperationTreeNode(
+                        operationTree->childNodes[1],
+                        listingFile,
+                        valuePlaceAssociations,
+                        argumentNumber
+                );
+                fprintln("SAVE_OUT", listingFile);
+            } else {
+                for (int i = 1; i < operationTree->childrenNumber; ++i) {
+                    tryPrintOperationTreeNode(operationTree->childNodes[i], listingFile, valuePlaceAssociations,
+                                              argumentNumber);
+                }
+                fprintlnWithArg("CALL", readPlace, listingFile);
             }
-            fprintlnWithArg("CALL", operationTree->childNodes[0]->value, listingFile);
+        } else {
+//            TODO
         }
     } else {
         fprintln("EXCEPTION", listingFile);
