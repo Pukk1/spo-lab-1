@@ -239,7 +239,7 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
         tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);
         fprintln("MOD", listingFile);
     } else if (!strcmp(operationType, "EXECUTE")) {
-//        findListItemsUtil
+//        List readPlaces = findListItemsUtil(operationTree->childNodes[0]);
         if (!strcmp(operationTree->childNodes[0]->value, "stdin")) {
             fprintln("LOAD_IN", listingFile);
         } else if (!strcmp(operationTree->childNodes[0]->value, "stdout")) {

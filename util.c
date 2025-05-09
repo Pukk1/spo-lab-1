@@ -51,7 +51,7 @@ List findListItemsUtil(TreeNode *treeNode) {
     return items;
 }
 
-List *initEmptyList() {
+List *mallocEmptyList() {
     void** nodes = malloc(sizeof(void *) * START_ARRAY_SIZE);
     List *list = malloc(sizeof(List));
     list->size = 0;

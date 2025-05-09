@@ -20,6 +20,6 @@ struct List {
 
 void addToList(List *currentList, void *element);
 List findListItemsUtil(TreeNode *treeNode);
-List *initEmptyList();
+List *mallocEmptyList();
 
 #endif //SPO_LAB1_UTIL_H

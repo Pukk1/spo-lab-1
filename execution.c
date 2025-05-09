@@ -434,7 +434,7 @@ SourceItemExecution *funExecutionGraph(char *filename, TreeNode *sourceItemEleme
     sourceItemExecution->filename = filename;
     sourceItemExecution->name = sourceItemElement->childNodes[0]->childNodes[0]->value;
 
-    List* functions = initEmptyList();
+    List* functions = mallocEmptyList();
     FunCalls funCalls = (FunCalls) {functions, sourceItemExecution->name};
     sourceItemExecution->nodes = initGraph(sourceItemElement, &funCalls);
     TreeNode *funCallsRoot = mallocTreeNode("currentFunction", sourceItemExecution->name,
@@ -458,10 +458,10 @@ SourceItemExecution *funExecutionGraph(char *filename, TreeNode *sourceItemEleme
 //}
 
 List *executionGraph(FilenameParseTree *input, int size) {
-    List *result = initEmptyList();
+    List *result = mallocEmptyList();
 
     for (int i = 0; i < size; ++i) {
-        exceptions = initEmptyList();
+        exceptions = mallocEmptyList();
         FilenameParseTree currentFileParseTree = input[i];
         List sourceItems = findSourceItems(findSourceNode(currentFileParseTree));
         for (int j = 0; j < sourceItems.size; ++j) {
