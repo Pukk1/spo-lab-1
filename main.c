@@ -14,14 +14,14 @@ void printParseTree(char *outputDirName, FILE *inputFile, char *baseInputFileNam
 
 
 void printExecutionGraph(char *outputDirName, char *baseInputFileName, ParseResult *resultParseTree,
-                         Array *resultExecutionGraph) {
-    for (int j = 0; j < resultExecutionGraph->nextPosition; ++j) {
+                         List *resultExecutionGraph) {
+    for (int j = 0; j < resultExecutionGraph->size; ++j) {
         SourceItemExecution *funExecution = resultExecutionGraph->elements[j];
         for (int k = 0; k < funExecution->errorsCount; ++k) {
             fprintf(stderr, "%s", funExecution->errors[k]);
         }
     }
-    for (int j = 0; j < resultExecutionGraph->nextPosition; ++j) {
+    for (int j = 0; j < resultExecutionGraph->size; ++j) {
         SourceItemExecution *funExecution = resultExecutionGraph->elements[j];
 
         char outputFunCallFileName[1024];
@@ -45,7 +45,7 @@ void printExecutionGraph(char *outputDirName, char *baseInputFileName, ParseResu
     }
 }
 
-void printListingToFile(Array *resultExecutionGraph, char *outputDirName) {
+void printListingToFile(List *resultExecutionGraph, char *outputDirName) {
     char outputListingFileName[1024];
     sprintf(outputListingFileName, "%s/listing.txt", outputDirName);
     FILE *outputParseTreeFile = fopen(outputListingFileName, "w");
@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
         printParseTree(outputDirName, inputFile, baseInputFileName, resultParseTree);
 
         FilenameParseTree fileNameParseTree = (FilenameParseTree) {baseInputFileName, resultParseTree};
-        Array *resultExecutionGraph = executionGraph(&fileNameParseTree, 1);
+        List *resultExecutionGraph = executionGraph(&fileNameParseTree, 1);
         printExecutionGraph(outputDirName, baseInputFileName, resultParseTree, resultExecutionGraph);
 
         placeLabels(resultExecutionGraph);

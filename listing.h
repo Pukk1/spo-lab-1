@@ -20,8 +20,8 @@ struct ValuePlaceAssociation {
     int shiftPosition;
 };
 
-void placeLabels(Array *funExecutions);
+void placeLabels(List *funExecutions);
 
-void printListing(Array *funExecutions, FILE *listingFile);
+void printListing(List *funExecutions, FILE *listingFile);
 
 #endif //SPO_LAB1_LISTING_H

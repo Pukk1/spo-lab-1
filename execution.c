@@ -8,14 +8,12 @@
 
 typedef struct FunCalls FunCalls;
 
-const int START_ARRAY_SIZE = 8;
-
 struct FunCalls {
-    Array *funCalls;
+    List *funCalls;
     char *currentFunName;
 };
 
-Array exceptions;
+List *exceptions;
 int currentExecutionId = -1;
 
 ExecutionNode *executionNode(TreeNode *treeNode, ExecutionNode *nextNode,
@@ -27,59 +25,14 @@ char *mallocString(char *text) {
     return pointer;
 }
 
-// добавление в массив с возможным динамическим расширением
-void addToList(Array *currentArray, void *element) {
-    void **nodes;
-    if (currentArray->size != currentArray->nextPosition) {
-        nodes = currentArray->elements;
-    } else {
-        nodes = malloc(sizeof(void *) * 2 * currentArray->size);
-        for (int i = 0; i < currentArray->size; ++i) {
-            nodes[i] = currentArray->elements[i];
-        }
-        free(currentArray->elements);
-        currentArray->elements = nodes;
-    }
-    nodes[currentArray->nextPosition] = element;
-    currentArray->nextPosition += 1;
-}
-
 void addException(char *text) {
     char *exception = mallocString(text);
-    addToList(&exceptions, exception);
+    addToList(exceptions, exception);
 }
 
 int getNextExecutionId() {
     currentExecutionId++;
     return currentExecutionId;
-}
-
-// утилита для получения всех node дерева разбора в виде массива (вызвано
-// бинарной реализацией листов)
-Array findListItemsUtil(TreeNode *treeNode) {
-    TreeNode **nodes = malloc(sizeof(TreeNode *) * START_ARRAY_SIZE);
-    Array items = {START_ARRAY_SIZE, 0, nodes};
-
-    TreeNode *currentListNode = treeNode;
-    do {
-        if (currentListNode->childrenNumber == 0) {
-            currentListNode = NULL;
-        } else if (currentListNode->childrenNumber == 1) {
-            addToList(&items, currentListNode->childNodes[0]);
-            currentListNode = NULL;
-        } else if (currentListNode->childrenNumber == 2) {
-            addToList(&items, currentListNode->childNodes[0]);
-            currentListNode = currentListNode->childNodes[1];
-        } else {
-            char exceptionText[1024];
-            sprintf(exceptionText,
-                    "Exception in list parsing more than two by element id %d",
-                    currentListNode->id);
-            addException(exceptionText);
-            return items;
-        }
-    } while (currentListNode != NULL);
-    return items;
 }
 
 // получение корневого элемента из результатов парсинга
@@ -91,12 +44,12 @@ TreeNode *findSourceNode(FilenameParseTree input) {
 }
 
 // получение списка функций из корневого элемента
-Array findSourceItems(TreeNode *source) {
+List findSourceItems(TreeNode *source) {
     if (source->childrenNumber != 0) {
         TreeNode *sourceItemsList = source->childNodes[0];
         return findListItemsUtil(sourceItemsList);
     } else {
-        return (Array) {0, 0, NULL};
+        return (List) {NULL, 0, 0};
     }
 }
 
@@ -148,7 +101,7 @@ ExecutionNode *executionListStatementNode(TreeNode *treeNode,
 ExecutionNode *executionVarNode(TreeNode *treeNode, ExecutionNode *nextNode,
                                 ExecutionNode *breakNode) {
     ExecutionNode *node = initExecutionNode("");
-    Array variablesList = {0, 0, NULL};
+    List variablesList = {NULL, 0, 0};
     TreeNode *typeNode = NULL;
     if (treeNode->childrenNumber == 2) {
         typeNode = treeNode->childNodes[1];
@@ -160,7 +113,7 @@ ExecutionNode *executionVarNode(TreeNode *treeNode, ExecutionNode *nextNode,
     if (!strcmp(typeNode->type, "array")) {
         int size = 0;
         if (typeNode->childrenNumber == 2) {
-            size = findListItemsUtil(typeNode->childNodes[1]).nextPosition;
+            size = findListItemsUtil(typeNode->childNodes[1]).size;
         }
         sprintf(resultNodeType,
                 "array of %s size %d",
@@ -170,7 +123,7 @@ ExecutionNode *executionVarNode(TreeNode *treeNode, ExecutionNode *nextNode,
     }
 
     ExecutionNode *previous = node;
-    for (int i = 0; i < variablesList.nextPosition; ++i) {
+    for (int i = 0; i < variablesList.size; ++i) {
         char varNameAndType[1024];
         sprintf(varNameAndType,
                 "AS %s %s",
@@ -234,10 +187,10 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
         if (parsingTree->childrenNumber == 1) {
             node = mallocTreeNode("EXECUTE", NULL, 1);
         } else {
-            Array argsArray = findListItemsUtil(parsingTree->childNodes[1]);
-            node = mallocTreeNode("EXECUTE", NULL, argsArray.nextPosition + 1);
-            for (int i = 0; i < argsArray.nextPosition; ++i) {
-                node->childNodes[i + 1] = operationTreeNode(argsArray.elements[i], funCalls);
+            List argsList = findListItemsUtil(parsingTree->childNodes[1]);
+            node = mallocTreeNode("EXECUTE", NULL, argsList.size + 1);
+            for (int i = 0; i < argsList.size; ++i) {
+                node->childNodes[i + 1] = operationTreeNode(argsList.elements[i], funCalls);
             }
         }
         node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0], funCalls);
@@ -441,9 +394,9 @@ ExecutionNode *functionArgsExecutionNode(TreeNode *functionSignatureNode, Execut
     node->definitely = nextNode;
     if (functionSignatureNode->childrenNumber > 0 &&
         !strcmp(functionSignatureNode->childNodes[0]->type, "listArgDef")) {
-        Array args = findListItemsUtil(functionSignatureNode->childNodes[0]);
+        List args = findListItemsUtil(functionSignatureNode->childNodes[0]);
         ExecutionNode *parentNode = node;
-        for (int i = 0; i < args.nextPosition; ++i) {
+        for (int i = 0; i < args.size; ++i) {
             TreeNode *argDef = args.elements[i];
             char argText[1024];
             sprintf(argText, "ARG %s %s", argDef->childNodes[0]->value, argDef->childNodes[1]->value);
@@ -481,18 +434,17 @@ SourceItemExecution *funExecutionGraph(char *filename, TreeNode *sourceItemEleme
     sourceItemExecution->filename = filename;
     sourceItemExecution->name = sourceItemElement->childNodes[0]->childNodes[0]->value;
 
-    void **nodes = malloc(sizeof(TreeNode *) * START_ARRAY_SIZE);
-    Array funs = (Array) {START_ARRAY_SIZE, 0, nodes};
-    FunCalls funCalls = (FunCalls) {&funs, sourceItemExecution->name};
+    List* functions = initEmptyList();
+    FunCalls funCalls = (FunCalls) {functions, sourceItemExecution->name};
     sourceItemExecution->nodes = initGraph(sourceItemElement, &funCalls);
     TreeNode *funCallsRoot = mallocTreeNode("currentFunction", sourceItemExecution->name,
-                                            funCalls.funCalls->nextPosition);
-    for (int k = 0; k < funCalls.funCalls->nextPosition; ++k) {
+                                            funCalls.funCalls->size);
+    for (int k = 0; k < funCalls.funCalls->size; ++k) {
         funCallsRoot->childNodes[k] = funCalls.funCalls->elements[k];
     }
     sourceItemExecution->funCalls = funCallsRoot;
-    sourceItemExecution->errorsCount = exceptions.nextPosition;
-    sourceItemExecution->errors = exceptions.elements;
+    sourceItemExecution->errorsCount = exceptions->size;
+    sourceItemExecution->errors = (char **) exceptions->elements;
     return sourceItemExecution;
 }
 
@@ -505,23 +457,14 @@ SourceItemExecution *funExecutionGraph(char *filename, TreeNode *sourceItemEleme
 //    classExecution->name = mallocString(classExecutionName);
 //}
 
-void initExceptions() {
-    void **nodes = malloc(sizeof(char *) * START_ARRAY_SIZE);
-    exceptions = (Array) {START_ARRAY_SIZE, 0, nodes};
-}
-
-Array *executionGraph(FilenameParseTree *input, int size) {
-    void **resultNodes = malloc(sizeof(SourceItemExecution * ) * START_ARRAY_SIZE);
-    Array *result = malloc(sizeof(Array));
-    result->size = START_ARRAY_SIZE;
-    result->nextPosition = 0;
-    result->elements = resultNodes;
+List *executionGraph(FilenameParseTree *input, int size) {
+    List *result = initEmptyList();
 
     for (int i = 0; i < size; ++i) {
-        initExceptions();
+        exceptions = initEmptyList();
         FilenameParseTree currentFileParseTree = input[i];
-        Array sourceItems = findSourceItems(findSourceNode(currentFileParseTree));
-        for (int j = 0; j < sourceItems.nextPosition; ++j) {
+        List sourceItems = findSourceItems(findSourceNode(currentFileParseTree));
+        for (int j = 0; j < sourceItems.size; ++j) {
             TreeNode *sourceItem = sourceItems.elements[j];
             if (!strcmp(sourceItem->childNodes[0]->type, "funcDef")) {
                 void *sourceItemExecution = funExecutionGraph(currentFileParseTree.filename, sourceItem);

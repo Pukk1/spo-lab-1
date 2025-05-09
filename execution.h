@@ -6,11 +6,11 @@
 #define SPO_LAB1_EXECUTION_H
 
 #include "parser.h"
+#include "util.h"
 
 typedef struct FilenameParseTree FilenameParseTree;
 typedef struct ExecutionNode ExecutionNode;
 typedef struct SourceItemExecution SourceItemExecution;
-typedef struct Array Array;
 typedef struct ListingNode ListingNode;
 
 struct ExecutionNode {
@@ -21,12 +21,6 @@ struct ExecutionNode {
     int id;
     int printed;
     ListingNode *listingNode;
-};
-
-struct Array {
-    int size;
-    int nextPosition;
-    void **elements;
 };
 
 struct SourceItemExecution {
@@ -43,10 +37,9 @@ struct FilenameParseTree {
     ParseResult *tree;
 };
 
-Array *executionGraph(FilenameParseTree *input, int size);
+List *executionGraph(FilenameParseTree *input, int size);
 
 void printExecution(SourceItemExecution *funExecution, FILE *outputFunCallFile, FILE *outputOperationTreesFile,
                     FILE *outputExecutionFile);
-void addToList(Array *currentArray, void *element);
 
 #endif // SPO_LAB1_EXECUTION_H

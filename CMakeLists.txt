@@ -17,4 +17,7 @@ add_executable(SPO_Lab1 main.c
         execution.c
         execution.h
         listing.c
-        listing.h)
+        listing.h
+        util.c
+        util.h
+)

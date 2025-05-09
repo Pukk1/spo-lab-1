@@ -38,16 +38,16 @@ void tryPlaceLabel(ExecutionNode *executionNode, int *labelCounter, bool necessa
     }
 }
 
-void placeLabels(Array *funExecutions) {
+void placeLabels(List *funExecutions) {
     int labelCounter = 0;
-    for (int i = 0; i < funExecutions->nextPosition; ++i) {
+    for (int i = 0; i < funExecutions->size; ++i) {
         SourceItemExecution *funExecution = funExecutions->elements[i];
         tryPlaceLabel(funExecution->nodes, &labelCounter, false);
     }
 }
 
-ValuePlaceAssociation *findValuePlace(Array *valuePlaceAssociations, char *name) {
-    for (int i = 0; i < valuePlaceAssociations->nextPosition; ++i) {
+ValuePlaceAssociation *findValuePlace(List *valuePlaceAssociations, char *name) {
+    for (int i = 0; i < valuePlaceAssociations->size; ++i) {
         ValuePlaceAssociation *valuePlaceAssociation = valuePlaceAssociations->elements[i];
         if (!strcmp(valuePlaceAssociation->name, name)) {
             return valuePlaceAssociation;
@@ -68,7 +68,7 @@ void fprintln(char *message, FILE *file) {
     fprintf(file, "%s\n", message);
 }
 
-ValuePlaceAssociation *addArgumentPlace(Array *valuePlaceAssociations, char *argName, char *argType) {
+ValuePlaceAssociation *addArgumentPlace(List *valuePlaceAssociations, char *argName, char *argType) {
     ValuePlaceAssociation *findRes = findValuePlace(valuePlaceAssociations, argName);
     if (findRes != NULL) {
         char exceptionMessage[1000];
@@ -76,7 +76,7 @@ ValuePlaceAssociation *addArgumentPlace(Array *valuePlaceAssociations, char *arg
         printException(exceptionMessage);
         return findRes;
     } else {
-        for (int i = 0; i < valuePlaceAssociations->nextPosition; ++i) {
+        for (int i = 0; i < valuePlaceAssociations->size; ++i) {
             ValuePlaceAssociation *previousArg = valuePlaceAssociations->elements[i];
             previousArg->shiftPosition -= 2;
         }
@@ -88,7 +88,7 @@ ValuePlaceAssociation *addArgumentPlace(Array *valuePlaceAssociations, char *arg
     }
 }
 
-ValuePlaceAssociation *addValuePlace(Array *valuePlaceAssociations, char *valuePlaceName, char *valuePlaceType) {
+ValuePlaceAssociation *addValuePlace(List *valuePlaceAssociations, char *valuePlaceName, char *valuePlaceType) {
     ValuePlaceAssociation *findRes = findValuePlace(valuePlaceAssociations, valuePlaceName);
     if (findRes != NULL) {
         char exceptionMessage[1000];
@@ -99,8 +99,8 @@ ValuePlaceAssociation *addValuePlace(Array *valuePlaceAssociations, char *valueP
         ValuePlaceAssociation *newAssociation = malloc(sizeof(ValuePlaceAssociation));
         newAssociation->name = valuePlaceName;
         ValuePlaceAssociation *lastElement = NULL;
-        if (valuePlaceAssociations->nextPosition > 0) {
-            lastElement = valuePlaceAssociations->elements[valuePlaceAssociations->nextPosition - 1];
+        if (valuePlaceAssociations->size > 0) {
+            lastElement = valuePlaceAssociations->elements[valuePlaceAssociations->size - 1];
         }
 //        0 - адрес возврата, 1-2 возвращаемое значение
         int newElementShift = 3;
@@ -113,7 +113,7 @@ ValuePlaceAssociation *addValuePlace(Array *valuePlaceAssociations, char *valueP
     }
 }
 
-void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, Array *valuePlaceAssociations,
+void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List *valuePlaceAssociations,
                                int *argumentNumber) {
     char *operationType = operationTree->type;
     if (!strcmp(operationType, "ARG")) {
@@ -199,6 +199,7 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, Array
         sprintf(valuePlaceShift, "%d", valuePlace->shiftPosition);
         fprintlnWithArg("SAVE_BP", valuePlaceShift, listingFile);
     } else if (!strcmp(operationType, "READ")) {
+//        findListItemsUtil
         ValuePlaceAssociation *valuePlace = findValuePlace(valuePlaceAssociations, operationTree->childNodes[0]->value);
         if (valuePlace == NULL) {
             char exceptionMessage[1000];
@@ -238,6 +239,7 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, Array
         tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);
         fprintln("MOD", listingFile);
     } else if (!strcmp(operationType, "EXECUTE")) {
+//        findListItemsUtil
         if (!strcmp(operationTree->childNodes[0]->value, "stdin")) {
             fprintln("LOAD_IN", listingFile);
         } else if (!strcmp(operationTree->childNodes[0]->value, "stdout")) {
@@ -260,7 +262,7 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, Array
     }
 }
 
-void tryPrintNode(ExecutionNode *executionNode, FILE *listingFile, Array *valuePlaceAssociations, int *argumentNumber) {
+void tryPrintNode(ExecutionNode *executionNode, FILE *listingFile, List *valuePlaceAssociations, int *argumentNumber) {
     if (executionNode == NULL) {
         return;
     }
@@ -295,17 +297,17 @@ void tryPrintNode(ExecutionNode *executionNode, FILE *listingFile, Array *valueP
     }
 }
 
-void printListing(Array *funExecutions, FILE *listingFile) {
+void printListing(List *funExecutions, FILE *listingFile) {
     fprintln("[section ram]", listingFile);
     fprintln("INIT code_end_addr", listingFile);
     fprintln("CALL main", listingFile);
     fprintln("POP", listingFile);
     fprintln("HLT", listingFile);
-    for (int i = 0; i < funExecutions->nextPosition; ++i) {
+    for (int i = 0; i < funExecutions->size; ++i) {
         int argumentNumber = 0;
-        Array *valuePlaceAssociationsArray = malloc(sizeof(Array));
-        valuePlaceAssociationsArray->size = 100;
-        valuePlaceAssociationsArray->nextPosition = 0;
+        List *valuePlaceAssociationsArray = malloc(sizeof(List));
+        valuePlaceAssociationsArray->capacity = 100;
+        valuePlaceAssociationsArray->size = 0;
         valuePlaceAssociationsArray->elements = malloc(sizeof(ValuePlaceAssociation) * 100);
         SourceItemExecution *funExecution = funExecutions->elements[i];
         char funLabel[1000];

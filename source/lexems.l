@@ -91,11 +91,11 @@
  return CLASS;
  }
 "this"                                {
- yylval.node = createNode("THIS", NULL, "");
+ yylval.node = createNode("this", NULL, "");
  return THIS;
  }
 "super"                                {
- yylval.node = createNode("SUPER", NULL, "");
+ yylval.node = createNode("super", NULL, "");
  return SUPER;
  }
 "end"                                {
