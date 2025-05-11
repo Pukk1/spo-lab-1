@@ -68,7 +68,7 @@ void fprintln(char *message, FILE *file) {
     fprintf(file, "%s\n", message);
 }
 
-ValuePlaceAssociation *addArgumentPlace(List *valuePlaceAssociations, char *argName, char *argType) {
+ValuePlaceAssociation *addArgumentPlace(List *valuePlaceAssociations, char *argName) {
     ValuePlaceAssociation *findRes = findValuePlace(valuePlaceAssociations, argName);
     if (findRes != NULL) {
         char exceptionMessage[1000];
@@ -113,16 +113,16 @@ ValuePlaceAssociation *addValuePlace(List *valuePlaceAssociations, char *valuePl
     }
 }
 
+void findFieldValuePlace() {
+
+}
+
 void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List *valuePlaceAssociations,
                                int *argumentNumber) {
     char *operationType = operationTree->type;
     if (!strcmp(operationType, "ARG")) {
         (*argumentNumber)++;
-        addArgumentPlace(
-                valuePlaceAssociations,
-                operationTree->childNodes[1]->value,
-                operationTree->childNodes[0]->value
-        );
+        addArgumentPlace(valuePlaceAssociations,operationTree->childNodes[1]->value);
     } else if (!strcmp(operationType, "AS")) {
         addValuePlace(
                 valuePlaceAssociations,
@@ -204,13 +204,16 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
             sprintf(valuePlaceShift, "%d", valuePlace->shiftPosition);
             fprintlnWithArg("SAVE_BP", valuePlaceShift, listingFile);
         } else {
-//            TODO
+            tryPrintOperationTreeNode(operationTree->childNodes[0], listingFile, valuePlaceAssociations,
+                                      argumentNumber);
+            tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations,
+                                      argumentNumber);
+            fprintln("SAVE", listingFile);
         }
     } else if (!strcmp(operationType, "READ")) {
-        List readPlaces = findListItemsUtil(operationTree->childNodes[0]);
-        if(readPlaces.size == 1) {
-            char *readPlace = ((TreeNode *)readPlaces.elements[0])->value;
-            ValuePlaceAssociation *valuePlace = findValuePlace(valuePlaceAssociations,readPlace);
+        TreeNode *readPlace = operationTree->childNodes[0];
+        if(!strcmp(readPlace->type, "READ_VAR")) {
+            ValuePlaceAssociation *valuePlace = findValuePlace(valuePlaceAssociations, readPlace);
             if (valuePlace == NULL) {
                 char exceptionMessage[1000];
                 sprintf(exceptionMessage, "value place not found by name %s", readPlace);
@@ -222,6 +225,10 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
             fprintlnWithArg("LOAD_BP", valuePlaceShift, listingFile);
         } else {
 //            TODO
+        }
+        if(operationTree->childrenNumber > 1) {
+            tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations,
+                                      argumentNumber);
         }
     } else if (!strcmp(operationType, "EQUALITY")) {
         tryPrintOperationTreeNode(operationTree->childNodes[0], listingFile, valuePlaceAssociations, argumentNumber);
@@ -270,10 +277,19 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
                     tryPrintOperationTreeNode(operationTree->childNodes[i], listingFile, valuePlaceAssociations,
                                               argumentNumber);
                 }
-                fprintlnWithArg("CALL", readPlace, listingFile);
+                fprintlnWithArg("CALL_STATIC", readPlace, listingFile);
             }
         } else {
-//            TODO
+//            аргументы
+            for (int i = 1; i < operationTree->childrenNumber; ++i) {
+                tryPrintOperationTreeNode(operationTree->childNodes[i], listingFile, valuePlaceAssociations,
+                                          argumentNumber);
+            }
+//            ссылка на функцию
+            tryPrintOperationTreeNode(operationTree->childNodes[0], listingFile, valuePlaceAssociations,
+                                      argumentNumber);
+
+            fprintln("CALL", listingFile);
         }
     } else {
         fprintln("EXCEPTION", listingFile);
@@ -318,23 +334,28 @@ void tryPrintNode(ExecutionNode *executionNode, FILE *listingFile, List *valuePl
 void printListing(List *funExecutions, FILE *listingFile) {
     fprintln("[section ram]", listingFile);
     fprintln("INIT code_end_addr", listingFile);
-    fprintln("CALL main", listingFile);
+    fprintln("CALL_STATIC main", listingFile);
     fprintln("POP", listingFile);
     fprintln("HLT", listingFile);
     for (int i = 0; i < funExecutions->size; ++i) {
-        int argumentNumber = 0;
-        List *valuePlaceAssociationsArray = malloc(sizeof(List));
-        valuePlaceAssociationsArray->capacity = 100;
-        valuePlaceAssociationsArray->size = 0;
-        valuePlaceAssociationsArray->elements = malloc(sizeof(ValuePlaceAssociation) * 100);
         SourceItemExecution *funExecution = funExecutions->elements[i];
+        List *valuePlaceAssociations = malloc(sizeof(List));
+        int argumentNumber = 0;
+        if(funExecution->isMethod) {
+//        this
+            argumentNumber++;
+            addArgumentPlace(valuePlaceAssociations, "this");
+        }
+        valuePlaceAssociations->capacity = 100;
+        valuePlaceAssociations->size = 0;
+        valuePlaceAssociations->elements = malloc(sizeof(ValuePlaceAssociation) * 100);
         char funLabel[1000];
         sprintf(funLabel, "%s:", funExecution->name);
         fprintln(funLabel, listingFile);
         fprintln("PUSH 0", listingFile);
         fprintln("PUSH 0", listingFile);
-        tryPrintNode(funExecution->nodes, listingFile, valuePlaceAssociationsArray, &argumentNumber);
-        free(valuePlaceAssociationsArray);
+        tryPrintNode(funExecution->nodes, listingFile, valuePlaceAssociations, &argumentNumber);
+        free(valuePlaceAssociations);
     }
     fprintln("code_end_addr:", listingFile);
 }

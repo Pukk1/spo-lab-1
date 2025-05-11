@@ -30,6 +30,7 @@ struct SourceItemExecution {
     ExecutionNode *nodes;
     char **errors;
     int errorsCount;
+    bool isMethod;
 };
 
 struct FilenameParseTree {
