@@ -1,7 +1,4 @@
 #include "node.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 
 TreeNode *createNode(char *type, ChildNodes *childNodes, char *value) {
     TreeNode *node = malloc(sizeof(TreeNode));

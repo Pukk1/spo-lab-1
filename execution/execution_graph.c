@@ -2,9 +2,7 @@
 // Created by Ivan on 20.10.2024.
 //
 
-#include "execution.h"
-#include <string.h>
-#include <stdbool.h>
+#include "execution_graph.h"
 
 typedef struct FunCalls FunCalls;
 
@@ -13,28 +11,11 @@ struct FunCalls {
     char *currentFunName;
 };
 
-List *exceptions;
-int currentExecutionId = -1;
-
 ExecutionNode *executionNode(TreeNode *treeNode, ExecutionNode *nextNode,
                              ExecutionNode *breakNode, FunCalls *funCalls);
+
 TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls);
 
-char *mallocString(char *text) {
-    char *pointer = malloc(sizeof(char) * 1024);
-    sprintf(pointer, "%s", text);
-    return pointer;
-}
-
-void addException(char *text) {
-    char *exception = mallocString(text);
-    addToList(exceptions, exception);
-}
-
-int getNextExecutionId() {
-    currentExecutionId++;
-    return currentExecutionId;
-}
 
 // получение корневого элемента из результатов парсинга
 TreeNode *findSourceNode(FilenameParseTree input) {
@@ -66,23 +47,6 @@ ExecutionNode *initExecutionNode(char *text) {
     return node;
 }
 
-TreeNode *mallocTreeNode(char *type, char *value, int nodeNumber) {
-    TreeNode *node = malloc(sizeof(TreeNode));
-    node->id = getNextExecutionId();
-    if (type) {
-        node->type = mallocString(type);
-    } else {
-        node->type = NULL;
-    }
-    if (value) {
-        node->value = mallocString(value);
-    } else {
-        node->value = NULL;
-    }
-    node->childNodes = malloc(sizeof(TreeNode *) * nodeNumber);
-    node->childrenNumber = nodeNumber;
-    return node;
-}
 
 // создание блока listStatement
 ExecutionNode *executionListStatementNode(TreeNode *treeNode,
@@ -150,7 +114,7 @@ ExecutionNode *executionVarNode(TreeNode *treeNode, ExecutionNode *nextNode,
 TreeNode *findThisObjectFirstArgumentOrNull(TreeNode *placeChainTreeNode, FunCalls *funCalls) {
     TreeNode *readChainForField = operationTreeNode(placeChainTreeNode, funCalls);
     List readChainNodesList = findListItemsUtil(readChainForField);
-    if(readChainNodesList.size == 1) {
+    if (readChainNodesList.size == 1) {
         return NULL;
     } else {
         TreeNode *objectLinkForField = readChainForField;
@@ -180,14 +144,11 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
 
         if (chainHasSeveralNodes) {
             node = mallocTreeNode("READ", NULL, 2);
+            node->childNodes[1] = operationTreeNode(parsingTree->childNodes[1], funCalls);
         } else {
             node = mallocTreeNode("READ", NULL, 1);
         }
-
         node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0], funCalls);
-        if (chainHasSeveralNodes) {
-            node->childNodes[1] = operationTreeNode(parsingTree->childNodes[1], funCalls);
-        }
 
     } else if (!strcmp(parsingTree->type, "INCREMENT") || !strcmp(parsingTree->type, "DECREMENT")) {
         node = mallocTreeNode("SET", NULL, 2);
@@ -220,7 +181,7 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
                 node->childNodes[i + baseChildNodesNumber] = operationTreeNode(argsList.elements[i], funCalls);
             }
         }
-        if(thisObjectForFunCallOrNull) {
+        if (thisObjectForFunCallOrNull) {
             node->childNodes[1] = thisObjectForFunCallOrNull;
         }
         node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0], funCalls);
@@ -465,7 +426,7 @@ SourceItemExecution *funExecutionGraph(char *filename, TreeNode *sourceItemEleme
     sourceItemExecution->filename = filename;
     sourceItemExecution->name = sourceItemElement->childNodes[0]->childNodes[0]->value;
 
-    List* functions = mallocEmptyList();
+    List *functions = mallocEmptyList();
     FunCalls funCalls = (FunCalls) {functions, sourceItemExecution->name};
     sourceItemExecution->nodes = initGraph(sourceItemElement, &funCalls);
     TreeNode *funCallsRoot = mallocTreeNode("currentFunction", sourceItemExecution->name,
@@ -506,111 +467,4 @@ List *executionGraph(FilenameParseTree *input, int size) {
         }
     }
     return result;
-}
-
-void printNode(TreeNode *node, FILE *outputFile) {
-    if (node == NULL) {
-        return;
-    }
-    int childrenNumber = node->childrenNumber;
-    for (int i = 0; i < childrenNumber; ++i) {
-        printNode(node->childNodes[i], outputFile);
-        fprintf(outputFile, "node%d", node->id);
-        fprintf(outputFile, "([");
-        int typeExists = 0;
-        if (node->type != NULL && strlen(node->type) > 0) {
-            fprintf(outputFile, "Type: %s", node->type);
-            typeExists = 1;
-        }
-        if (node->value != NULL && strlen(node->value) > 0) {
-            if (typeExists) {
-                fprintf(outputFile, ", ", node->value);
-            }
-            fprintf(outputFile, "Value: %s", node->value);
-        }
-        fprintf(outputFile, "])");
-
-        TreeNode *childNode = node->childNodes[i];
-        fprintf(outputFile, " --> ");
-        fprintf(outputFile, "node%d", childNode->id);
-        fprintf(outputFile, "([");
-        typeExists = 0;
-        if (childNode->type != NULL && strlen(childNode->type) > 0) {
-            fprintf(outputFile, "Type: %s", childNode->type);
-            typeExists = 1;
-        }
-        if (childNode->value != NULL && strlen(childNode->value) > 0) {
-            if (typeExists) {
-                fprintf(outputFile, ", ");
-            }
-            fprintf(outputFile, "Value: %s", childNode->value);
-        }
-        fprintf(outputFile, "])");
-        fprintf(outputFile, "\n");
-    }
-}
-
-void printTreeNode(TreeNode *node, FILE *outputFile) {
-    fprintf(outputFile, "flowchart TB\n");
-    printNode(node, outputFile);
-    fprintf(outputFile, "\n");
-}
-
-void printExecutionNode(ExecutionNode *father, ExecutionNode *child, FILE *outputFile, char *relationName) {
-    fprintf(outputFile, "node%d", father->id);
-    fprintf(outputFile, "([");
-    fprintf(outputFile, "Text: %s", father->text);
-    fprintf(outputFile, "])");
-    fprintf(outputFile, " --%s--> ", relationName);
-    fprintf(outputFile, "node%d", child->id);
-    fprintf(outputFile, "([");
-    fprintf(outputFile, "Text: %s", child->text);
-    fprintf(outputFile, "])");
-    fprintf(outputFile, "\n");
-}
-
-void printExecutionGraphNodeToFile(ExecutionNode *executionNode, FILE *outputOperationTreesFile,
-                                   FILE *outputExecutionFile) {
-    if (executionNode->printed) {
-        return;
-    } else {
-        executionNode->printed = 1;
-    }
-
-    if (executionNode->operationTree) {
-        char linkedExecutionNodeId[1024];
-        sprintf(linkedExecutionNodeId, "%d", executionNode->id);
-        TreeNode *linkedExecutionNode = mallocTreeNode("linked execution node id", linkedExecutionNodeId, 1);
-        linkedExecutionNode->childNodes[0] = executionNode->operationTree;
-        printNode(linkedExecutionNode, outputOperationTreesFile);
-    }
-
-    ExecutionNode *definitely = executionNode->definitely;
-    if (definitely) {
-        printExecutionGraphNodeToFile(definitely, outputOperationTreesFile, outputExecutionFile);
-
-        printExecutionNode(executionNode, definitely, outputExecutionFile, "definitely");
-    }
-
-    ExecutionNode *conditionally = executionNode->conditionally;
-    if (conditionally) {
-        printExecutionGraphNodeToFile(conditionally, outputOperationTreesFile, outputExecutionFile);
-
-        printExecutionNode(executionNode, conditionally, outputExecutionFile, "conditionally");
-    }
-}
-
-void printExecutionGraphToFile(ExecutionNode *executionNode, FILE *outputOperationTreesFile,
-                               FILE *outputExecutionFile) {
-    fprintf(outputOperationTreesFile, "flowchart TB\n");
-    fprintf(outputExecutionFile, "flowchart TB\n");
-    printExecutionGraphNodeToFile(executionNode, outputOperationTreesFile, outputExecutionFile);
-    fprintf(outputOperationTreesFile, "\n");
-    fprintf(outputExecutionFile, "\n");
-}
-
-void printExecution(SourceItemExecution *funExecution, FILE *outputFunCallFile, FILE *outputOperationTreesFile,
-                    FILE *outputExecutionFile) {
-    printTreeNode(funExecution->funCalls, outputFunCallFile);
-    printExecutionGraphToFile(funExecution->nodes, outputOperationTreesFile, outputExecutionFile);
 }

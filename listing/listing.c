@@ -3,7 +3,6 @@
 //
 
 #include "listing.h"
-#include "execution.h"
 
 void initListingParseNode(ExecutionNode *executionNode) {
     ListingNode *node = malloc(sizeof(ListingNode));

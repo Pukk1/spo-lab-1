@@ -2,12 +2,12 @@
 #define SPO_LAB1_MAIN_H
 
 #include "stdbool.h"
-#include "execution.h"
-#include "node.h"
-#include "parser.h"
+#include "execution/execution_graph.h"
+#include "node/node.h"
+#include "parse/parser.h"
 #include <stdio.h>
 #include <dirent.h>
 #include <libgen.h>
-#include "listing.h"
+#include "listing/listing.h"
 
 #endif //SPO_LAB1_MAIN_H

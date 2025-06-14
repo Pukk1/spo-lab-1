@@ -1,8 +1,7 @@
-#include <stdio.h>
 #include "error.h"
-#include "parser.h"
-#include "string.h"
-#include "parser.tab.h"
+
+char **errors;
+int errorsCount;
 
 void yyerror(const char *s) {
 //    yylloc;

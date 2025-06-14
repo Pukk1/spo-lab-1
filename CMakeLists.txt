@@ -4,8 +4,8 @@ set(CMAKE_C_STANDARD 99)
 
 
 add_executable(SPO_Lab1 main.c
-        node.c
-        node.h
+        node/node.c
+        node/node.h
         error.c
         error.h
         main.h
@@ -13,11 +13,25 @@ add_executable(SPO_Lab1 main.c
         parser.tab.h
         lex.yy.c
 
-        parser.c parser.h
-        execution.c
-        execution.h
-        listing.c
-        listing.h
-        util.c
-        util.h
+        parse/parser.c parse/parser.h
+        execution/execution_graph.c
+        execution/execution_graph.h
+        listing/listing.c
+        listing/listing.h
+        common/list/list_util.c
+        common/list/list_util.h
+        execution/print/execution_print.c
+        execution/print/execution_print.h
+        execution/execution_types.h
+        node/node_types.h
+        parse/parse_types.h
+        listing/listing_types.h
+        common/node/tree_node_util.c
+        common/node/tree_node_util.h
+        common/string/string_util.c
+        common/string/string_util.h
+        common/exception/exception_util.c
+        common/exception/exception_util.h
+        common/execution/execution_util.c
+        common/execution/execution_util.h
 )

@@ -2,8 +2,6 @@
 
 TreeNode **allNodes;
 int allNodesCount;
-char **errors;
-int errorsCount;
 
 
 ParseResult *parse(FILE *file) {

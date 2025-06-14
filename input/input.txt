@@ -1,13 +1,5 @@
-class ASD
-    public dim a as int
-    public function asd()
-    end function
-end class
-
 function main()
     dim b as ASD
     b;
-    this.asd();
-    b.sada();
-    b.a = 10;
+    this.asd(super, this);
 end function
