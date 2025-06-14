@@ -8,8 +8,7 @@
 #include "../common/list/list_util.h"
 #include "../execution/execution_graph.h"
 #include "../execution/print/execution_print.h"
-
-void placeLabels(List *funExecutions);
+#include "../common/file/file_work.h"
 
 void printListing(List *funExecutions, FILE *listingFile);
 

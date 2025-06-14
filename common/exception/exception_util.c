@@ -10,3 +10,7 @@ void addException(char *text) {
     char *exception = mallocString(text);
     addToList(exceptions, exception);
 }
+
+void printException(char *message) {
+    printf("EXCEPTION: %s", message);
+}

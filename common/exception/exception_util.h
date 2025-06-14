@@ -11,5 +11,6 @@
 extern List *exceptions;
 
 void addException(char *text);
+void printException(char *message);
 
 #endif //SPO_LAB1_EXCEPTION_UTIL_H

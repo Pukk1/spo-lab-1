@@ -34,4 +34,8 @@ add_executable(SPO_Lab1 main.c
         common/exception/exception_util.h
         common/execution/execution_util.c
         common/execution/execution_util.h
+        listing/place_lables.c
+        listing/place_lables.h
+        common/file/file_work.c
+        common/file/file_work.h
 )
