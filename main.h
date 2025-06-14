@@ -9,5 +9,6 @@
 #include <dirent.h>
 #include <libgen.h>
 #include "listing/listing.h"
+#include "listing/place_lables.h"
 
 #endif //SPO_LAB1_MAIN_H

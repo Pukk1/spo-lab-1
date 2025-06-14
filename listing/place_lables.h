@@ -9,6 +9,6 @@
 #include "../common/list/list_util.h"
 #include "../execution/execution_types.h"
 
-void printListing(List *funExecutions, FILE *listingFile);
+void placeLabels(List *funExecutions);
 
 #endif //SPO_LAB1_PLACE_LABLES_H
