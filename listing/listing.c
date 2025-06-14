@@ -159,10 +159,10 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
     } else if (!strcmp(operationType, "READ")) {
         TreeNode *readPlace = operationTree->childNodes[0];
         if (!strcmp(readPlace->type, "READ_VAR")) {
-            ValuePlaceAssociation *valuePlace = findValuePlace(valuePlaceAssociations, readPlace);
+            ValuePlaceAssociation *valuePlace = findValuePlace(valuePlaceAssociations, readPlace->value);
             if (valuePlace == NULL) {
                 char exceptionMessage[1000];
-                sprintf(exceptionMessage, "value place not found by name %s", readPlace);
+                sprintf(exceptionMessage, "value place not found by name %s", readPlace->value);
                 printException(exceptionMessage);
                 return;
             }
