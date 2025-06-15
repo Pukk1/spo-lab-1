@@ -70,12 +70,13 @@
 %type <node> optionalTypeRef
 %type <node> literal
 %type <node> place
-%type <node> selectField
-%type <node> field
+%type <node> selectObjectPart
+%type <node> objectPart
 %type <node> currentObjectLink
 %type <node> expr
 %type <node> listExpr
 %type <node> call
+%type <node> placeForCall
 %type <node> index
 %type <node> braces
 %type <node> unary
@@ -193,7 +194,7 @@ expr: unary                 {{$$ = $1;}}
     | call                  {{$$ = $1;}}
     | index                 {{$$ = $1;}}
     | place                 {{$$ = $1;}}
-    | selectField           {{$$ = $1;}}
+    | selectObjectPart      {{$$ = $1;}}
     | literal               {{$$ = $1;}};
 
 binary: expr SET expr     {{TreeNode* elements[] = {$1, $3};$$ = createNode("SET", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
@@ -218,7 +219,10 @@ unary: INCREMENT expr            {{TreeNode* elements[] = {$2};$$ = createNode("
 
 braces: LPAREN expr RPAREN  {{TreeNode* elements[] = {$2};$$ = createNode("braces", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-call: expr LPAREN listExpr RPAREN   {{TreeNode* elements[] = {$1, $3};$$ = createNode("call", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+call: placeForCall LPAREN listExpr RPAREN   {{TreeNode* elements[] = {$1, $3};$$ = createNode("call", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+
+placeForCall: IDENTIFIER                {{TreeNode* elements[] = {$1};$$ = createNode("function", NULL, elements[0]->value);}}
+    | expr                              {{TreeNode* elements[] = {$1};$$ = createNode("method", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 index: expr LBRACK expr RBRACK    {{TreeNode* elements[] = {$1, $3};$$ = createNode("index", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
@@ -226,12 +230,12 @@ listExpr:                   {{$$ = NULL;}}
     | expr listExpr         {{TreeNode* elements[] = {$1, $2};$$ = createNode("listExpr", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
     | expr COMMA listExpr   {{TreeNode* elements[] = {$1, $3};$$ = createNode("listExpr", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-place: IDENTIFIER                                   {{TreeNode* elements[] = {$1};$$ = createNode("variable", NULL, elements[0]->value);}}
-    | currentObjectLink                             {{TreeNode* elements[] = {$1};$$ = createNode("variable", NULL, elements[0]->value);}};
+place: IDENTIFIER                                   {{TreeNode* elements[] = {$1};$$ = createNode("place", NULL, elements[0]->value);}}
+    | currentObjectLink                             {{TreeNode* elements[] = {$1};$$ = createNode("place", NULL, elements[0]->value);}};
 
-selectField: expr DOT field                    {{TreeNode* elements[] = {$1, $3};$$ = createNode("selectField", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+selectObjectPart: expr DOT objectPart                    {{TreeNode* elements[] = {$1, $3};$$ = createNode("selectObjectPart", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-field: IDENTIFIER                                   {{TreeNode* elements[] = {$1};$$ = createNode("field", NULL, elements[0]->value);}};
+objectPart: IDENTIFIER                                   {{TreeNode* elements[] = {$1};$$ = createNode("objectPart", NULL, elements[0]->value);}};
 
 currentObjectLink: THIS                             {{TreeNode* elements[] = {$1};$$ = createNode("CURRENT_OBJECT_LINK", NULL, elements[0]->type);}}
     | SUPER                                         {{TreeNode* elements[] = {$1};$$ = createNode("CURRENT_OBJECT_LINK", NULL, elements[0]->type);}};
