@@ -68,10 +68,9 @@
 %type <node> listArgDef
 %type <node> optionalTypeRef
 %type <node> literal
-%type <node> placeChain
-%type <node> firstPlaceChainNode
-%type <node> followingPlaceChain
-%type <node> followingPlaceChainNode
+%type <node> place
+%type <node> variable
+%type <node> field
 %type <node> currentObjectLink
 %type <node> expr
 %type <node> listExpr
@@ -190,7 +189,7 @@ expr: unary                 {{$$ = $1;}}
     | binary                {{$$ = $1;}}
     | braces                {{$$ = $1;}}
     | callOrIndexer         {{$$ = $1;}}
-    | placeChain            {{$$ = $1;}}
+    | place                 {{$$ = $1;}}
     | literal               {{$$ = $1;}};
 
 binary: expr SET expr     {{TreeNode* elements[] = {$1, $3};$$ = createNode("SET", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
@@ -221,19 +220,16 @@ listExpr:                   {{$$ = NULL;}}
     | expr listExpr         {{TreeNode* elements[] = {$1, $2};$$ = createNode("listExpr", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
     | expr COMMA listExpr   {{TreeNode* elements[] = {$1, $3};$$ = createNode("listExpr", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-placeChain: firstPlaceChainNode                         {{TreeNode* elements[] = {$1};$$ = createNode("placeChain", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
-    | firstPlaceChainNode DOT followingPlaceChain       {{TreeNode* elements[] = {$1, $3};$$ = createNode("placeChain", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
-
-firstPlaceChainNode: IDENTIFIER                     {{TreeNode* elements[] = {$1};$$ = createNode("variable", NULL, elements[0]->value);}}
-    | currentObjectLink                             {{TreeNode* elements[] = {$1};$$ = createNode("variable", NULL, elements[0]->value);}};
-
-followingPlaceChain: followingPlaceChainNode                {{TreeNode* elements[] = {$1};$$ = createNode("placeChain", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
-    | followingPlaceChainNode DOT followingPlaceChain       {{TreeNode* elements[] = {$1, $3};$$ = createNode("placeChain", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
-
-followingPlaceChainNode: IDENTIFIER                         {{TreeNode* elements[] = {$1};$$ = createNode("field", NULL, elements[0]->value);}};
-
 currentObjectLink: THIS                             {{TreeNode* elements[] = {$1};$$ = createNode("CURRENT_OBJECT_LINK", NULL, elements[0]->type);}}
     | SUPER                                         {{TreeNode* elements[] = {$1};$$ = createNode("CURRENT_OBJECT_LINK", NULL, elements[0]->type);}};
+
+variable: IDENTIFIER                                {{TreeNode* elements[] = {$1};$$ = createNode("variable", NULL, elements[0]->value);}}
+    | currentObjectLink                             {{TreeNode* elements[] = {$1};$$ = createNode("variable", NULL, elements[0]->value);}};
+
+field: DOT IDENTIFIER                               {{TreeNode* elements[] = {$2};$$ = createNode("field", NULL, elements[0]->value);}};
+
+place: variable                                     {{$$ = $1;}}
+    | field                                         {{$$ = $1;}};
 
 literal: BOOL               {{$$ = $1;}}
     | STR                   {{$$ = $1;}}

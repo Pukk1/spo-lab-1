@@ -1,5 +1,8 @@
 function main()
     dim b as ASD
+    dim arr as ASD(,,,)
+    dim arr2 as int()
     b;
-    this.asd(super, this);
+    fds(b);
+    b.dsa();
 end function
