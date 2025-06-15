@@ -7,14 +7,10 @@ class a
 end class
 
 function a_constructor()
-    dim fields as string(,)(,,)
-    dim functions as string(,)(,,)
-    dim object as string(,,)
-    fields(0)(0) = "a";
-    fields(0)(1) = 0;
-    functions(0)(0) = "test";
-    functions(0)(1) = "function lable";
-    object(0) = fields;
-    object(1) = functions;
-    object;
+    dim members as string(,,)(,,)
+    members(0)(0) = "a";
+    members(0)(1) = 0;
+    members(1)(0) = "test";
+    members(1)(1) = "function lable";
+    members;
 end function
