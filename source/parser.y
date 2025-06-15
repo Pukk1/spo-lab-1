@@ -69,15 +69,18 @@
 %type <node> listArgDef
 %type <node> optionalTypeRef
 %type <node> literal
-%type <node> place
-%type <node> selectObjectPart
-%type <node> objectPart
+%type <node> placeLink
+%type <node> readPlace
+%type <node> localPlaceLink
+%type <node> linkedPlaceLink
+%type <node> callPlaceLink
+%type <node> objectMember
 %type <node> currentObjectLink
 %type <node> expr
 %type <node> listExpr
 %type <node> call
-%type <node> placeForCall
-%type <node> index
+%type <node> indexPlaceLink
+%type <node> objectMemberPlaceLink
 %type <node> braces
 %type <node> unary
 %type <node> binary
@@ -192,12 +195,10 @@ expr: unary                 {{$$ = $1;}}
     | binary                {{$$ = $1;}}
     | braces                {{$$ = $1;}}
     | call                  {{$$ = $1;}}
-    | index                 {{$$ = $1;}}
-    | place                 {{$$ = $1;}}
-    | selectObjectPart      {{$$ = $1;}}
+    | readPlace             {{$$ = $1;}}
     | literal               {{$$ = $1;}};
 
-binary: expr SET expr     {{TreeNode* elements[] = {$1, $3};$$ = createNode("SET", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+binary: placeLink SET expr     {{TreeNode* elements[] = {$1, $3};$$ = createNode("SET", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
     | expr SUM expr        {{TreeNode* elements[] = {$1, $3};$$ = createNode("SUM", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
     | expr SUB expr       {{TreeNode* elements[] = {$1, $3};$$ = createNode("SUB", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
     | expr MUL expr        {{TreeNode* elements[] = {$1, $3};$$ = createNode("MUL", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
@@ -217,28 +218,36 @@ unary: INCREMENT expr            {{TreeNode* elements[] = {$2};$$ = createNode("
     | DECREMENT expr            {{TreeNode* elements[] = {$2};$$ = createNode("DECREMENT", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
     | NOT expr              {{TreeNode* elements[] = {$2};$$ = createNode("NOT", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-braces: LPAREN expr RPAREN  {{TreeNode* elements[] = {$2};$$ = createNode("braces", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+braces: LPAREN expr RPAREN  {{$$ = $1;}};
 
-call: placeForCall LPAREN listExpr RPAREN   {{TreeNode* elements[] = {$1, $3};$$ = createNode("call", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+readPlace: placeLink           {{TreeNode* elements[] = {$1};$$ = createNode("readPlace", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-placeForCall: IDENTIFIER                {{TreeNode* elements[] = {$1};$$ = createNode("function", NULL, elements[0]->value);}}
-    | expr                              {{TreeNode* elements[] = {$1};$$ = createNode("method", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+callPlaceLink: IDENTIFIER           {{TreeNode* elements[] = {$1};$$ = createNode("functionForCallName", NULL, elements[0]->value);}}
+    | linkedPlaceLink               {{$$ = $1;}};
 
-index: expr LBRACK expr RBRACK    {{TreeNode* elements[] = {$1, $3};$$ = createNode("index", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+placeLink: localPlaceLink       {{$$ = $1;}}
+    | linkedPlaceLink           {{$$ = $1;}};
+
+call: callPlaceLink LPAREN listExpr RPAREN   {{TreeNode* elements[] = {$1, $3};$$ = createNode("call", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+
+indexPlaceLink: placeLink LBRACK expr RBRACK    {{TreeNode* elements[] = {$1, $3};$$ = createNode("indexPlaceLink", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+
+objectMemberPlaceLink: expr DOT objectMember    {{TreeNode* elements[] = {$1, $3};$$ = createNode("objectMemberPlaceLink", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+
+localPlaceLink: IDENTIFIER                                          {{TreeNode* elements[] = {$1};$$ = createNode("localPlaceLink", NULL, elements[0]->value);}}
+    | currentObjectLink                                             {{TreeNode* elements[] = {$1};$$ = createNode("localPlaceLink", NULL, elements[0]->value);}};
+
+linkedPlaceLink: objectMemberPlaceLink                              {{$$ = $1;}}
+    | indexPlaceLink                                                {{$$ = $1;}};
+
+objectMember: IDENTIFIER                                      {{TreeNode* elements[] = {$1};$$ = createNode("objectMember", NULL, elements[0]->value);}};
+
+currentObjectLink: THIS                             {{TreeNode* elements[] = {$1};$$ = createNode("CURRENT_OBJECT_LINK", NULL, elements[0]->type);}}
+    | SUPER                                         {{TreeNode* elements[] = {$1};$$ = createNode("CURRENT_OBJECT_LINK", NULL, elements[0]->type);}};
 
 listExpr:                   {{$$ = NULL;}}
     | expr listExpr         {{TreeNode* elements[] = {$1, $2};$$ = createNode("listExpr", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
     | expr COMMA listExpr   {{TreeNode* elements[] = {$1, $3};$$ = createNode("listExpr", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
-
-place: IDENTIFIER                                   {{TreeNode* elements[] = {$1};$$ = createNode("place", NULL, elements[0]->value);}}
-    | currentObjectLink                             {{TreeNode* elements[] = {$1};$$ = createNode("place", NULL, elements[0]->value);}};
-
-selectObjectPart: expr DOT objectPart                    {{TreeNode* elements[] = {$1, $3};$$ = createNode("selectObjectPart", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
-
-objectPart: IDENTIFIER                                   {{TreeNode* elements[] = {$1};$$ = createNode("objectPart", NULL, elements[0]->value);}};
-
-currentObjectLink: THIS                             {{TreeNode* elements[] = {$1};$$ = createNode("CURRENT_OBJECT_LINK", NULL, elements[0]->type);}}
-    | SUPER                                         {{TreeNode* elements[] = {$1};$$ = createNode("CURRENT_OBJECT_LINK", NULL, elements[0]->type);}};
 
 literal: BOOL               {{$$ = $1;}}
     | STR                   {{$$ = $1;}}
