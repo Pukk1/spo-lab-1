@@ -34,7 +34,7 @@ ValuePlaceAssociation *addArgumentPlace(List *valuePlaceAssociations, char *argN
     }
 }
 
-ValuePlaceAssociation *addValuePlace(List *valuePlaceAssociations, char *valuePlaceName, char *valuePlaceType) {
+ValuePlaceAssociation *addValuePlace(List *valuePlaceAssociations, char *valuePlaceName) {
     ValuePlaceAssociation *findRes = findValuePlace(valuePlaceAssociations, valuePlaceName);
     if (findRes != NULL) {
         char exceptionMessage[1000];
@@ -72,8 +72,7 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
     } else if (!strcmp(operationType, "AS")) {
         addValuePlace(
                 valuePlaceAssociations,
-                operationTree->childNodes[1]->value,
-                operationTree->childNodes[0]->value
+                operationTree->childNodes[1]->value
         );
         fprintln("PUSH 0", listingFile);
         fprintln("PUSH 0", listingFile);
