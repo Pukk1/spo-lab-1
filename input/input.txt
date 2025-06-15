@@ -1,5 +1,8 @@
 function main()
+    dim str as string
     dim b as ASD
-    b;
-    this.asd(super, this);
+    str = "str";
+    str[0] = 'b';
+    b = str[1];
+    b.sad = 'a';
 end function

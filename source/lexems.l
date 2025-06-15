@@ -214,6 +214,12 @@
 ")"                                 {
  return RPAREN;
  }
+"["                                 {
+ return LBRACK;
+ }
+"]"                                 {
+ return RBRACK;
+ }
 "="                                 {
  return SET;
  }
