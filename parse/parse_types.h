@@ -12,8 +12,6 @@ typedef struct ParseResult ParseResult;
 struct ParseResult {
     int size;
     TreeNode **nodes;
-    char **errors;
-    int errorsCount;
 };
 
 #endif //SPO_LAB1_PARSE_TYPES_H

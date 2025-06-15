@@ -346,7 +346,7 @@ ExecutionNode *executionBreakNode(TreeNode *treeNode, ExecutionNode *nextNode,
         sprintf(exceptionText,
                 "Exception in BREAK tree node parsing id --> %d no loop for break found",
                 treeNode[0].id);
-        addException(exceptionText);
+        printException(exceptionText);
         ExecutionNode *exceptionNode = initExecutionNode(exceptionText);
         node->definitely = exceptionNode;
         exceptionNode->definitely = nextNode;
@@ -435,8 +435,6 @@ SourceItemExecution *funExecutionGraph(char *filename, TreeNode *sourceItemEleme
         funCallsRoot->childNodes[k] = funCalls.funCalls->elements[k];
     }
     sourceItemExecution->funCalls = funCallsRoot;
-    sourceItemExecution->errorsCount = exceptions->size;
-    sourceItemExecution->errors = (char **) exceptions->elements;
     return sourceItemExecution;
 }
 
@@ -453,7 +451,6 @@ List *executionGraph(FilenameParseTree *input, int size) {
     List *result = mallocEmptyList();
 
     for (int i = 0; i < size; ++i) {
-        exceptions = mallocEmptyList();
         FilenameParseTree currentFileParseTree = input[i];
         List sourceItems = findSourceItems(findSourceNode(currentFileParseTree));
         for (int j = 0; j < sourceItems.size; ++j) {
@@ -462,6 +459,7 @@ List *executionGraph(FilenameParseTree *input, int size) {
                 void *sourceItemExecution = funExecutionGraph(currentFileParseTree.filename, sourceItem, false);
                 addToList(result, sourceItemExecution);
             } else {
+//                TODO
 //                classExecutionsGraphs(currentFileParseTree.filename, sourceItem, result);
             }
         }

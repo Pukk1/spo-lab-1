@@ -7,8 +7,6 @@
 #include "parser.tab.h"
 
 extern int yylineno;
-extern char **errors;
-extern int errorsCount;
 
 void yyerror(const char *s);
 

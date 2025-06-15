@@ -43,7 +43,6 @@ List findListItemsUtil(TreeNode *treeNode) {
             sprintf(exceptionText,
                     "Exception in list parsing more than two by element id %d",
                     currentListNode->id);
-//            addException(exceptionText);
             return items;
         }
     } while (currentListNode != NULL);

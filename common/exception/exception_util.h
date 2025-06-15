@@ -8,9 +8,6 @@
 #include "../string/string_util.h"
 #include "../list/list_util.h"
 
-extern List *exceptions;
-
-void addException(char *text);
 void printException(char *message);
 
 #endif //SPO_LAB1_EXCEPTION_UTIL_H

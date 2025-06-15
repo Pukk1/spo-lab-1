@@ -6,9 +6,6 @@ void printParseTree(char *outputDirName, FILE *inputFile, char *baseInputFileNam
     sprintf(outputParseTreeFileName, "%s/%s-parse-tree.txt", outputDirName, baseInputFileName);
     FILE *outputParseTreeFile = fopen(outputParseTreeFileName, "w");
     printTree(resultParseTree->nodes, resultParseTree->size, outputParseTreeFile);
-    for (int j = 0; j < resultParseTree->errorsCount; ++j) {
-        fprintf(stderr, "%s", resultParseTree->errors[j]);
-    }
     fclose(outputParseTreeFile);
 }
 
