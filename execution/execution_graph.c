@@ -111,20 +111,20 @@ ExecutionNode *executionVarNode(TreeNode *treeNode, ExecutionNode *nextNode,
     return node;
 }
 
-TreeNode *findThisObjectFirstArgumentOrNull(TreeNode *placeChainTreeNode, FunCalls *funCalls) {
-    TreeNode *readChainForField = operationTreeNode(placeChainTreeNode, funCalls);
-    List readChainNodesList = findListItemsUtil(readChainForField);
-    if (readChainNodesList.size == 1) {
-        return NULL;
-    } else {
-        TreeNode *objectLinkForField = readChainForField;
-        for (int i = 0; i < readChainNodesList.size - 2; ++i) {
-            objectLinkForField = objectLinkForField->childNodes[1];
-        }
-        objectLinkForField->childrenNumber = 1;
-        return readChainForField;
-    }
-}
+//TreeNode *findThisObjectFirstArgumentOrNull(TreeNode *placeChainTreeNode, FunCalls *funCalls) {
+//    TreeNode *readChainForField = operationTreeNode(placeChainTreeNode, funCalls);
+//    List readChainNodesList = findListItemsUtil(readChainForField);
+//    if (readChainNodesList.size == 1) {
+//        return NULL;
+//    } else {
+//        TreeNode *objectLinkForField = readChainForField;
+//        for (int i = 0; i < readChainNodesList.size - 2; ++i) {
+//            objectLinkForField = objectLinkForField->childNodes[1];
+//        }
+//        objectLinkForField->childrenNumber = 1;
+//        return readChainForField;
+//    }
+//}
 
 // для построения дерева операций
 TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
@@ -164,14 +164,9 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
         }
         node->childNodes[1]->childNodes[0] = mallocTreeNode(NULL, "const: 1", 0);
         node->childNodes[1]->childNodes[1] = operationTreeNode(parsingTree->childNodes[0], funCalls);
-    } else if (!strcmp(parsingTree->type, "callOrIndexer")) {
-        TreeNode *thisObjectForFunCallOrNull = findThisObjectFirstArgumentOrNull(parsingTree->childNodes[0], funCalls);
+    } else if (!strcmp(parsingTree->type, "call")) {
 //        на загрузку самой функции
         int baseChildNodesNumber = 1;
-//        на передачу this первым параметром функции, которая вызывается как метод объекта
-        if (thisObjectForFunCallOrNull) {
-            baseChildNodesNumber++;
-        }
         if (parsingTree->childrenNumber == 1) {
             node = mallocTreeNode("EXECUTE", NULL, baseChildNodesNumber);
         } else {
@@ -181,11 +176,9 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
                 node->childNodes[i + baseChildNodesNumber] = operationTreeNode(argsList.elements[i], funCalls);
             }
         }
-        if (thisObjectForFunCallOrNull) {
-            node->childNodes[1] = thisObjectForFunCallOrNull;
-        }
         node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0], funCalls);
 
+//        funcalls
         char funCallOperationIdNodeString[1024];
         sprintf(funCallOperationIdNodeString, "%d", node->id);
         TreeNode *funCallOperationIdNode = mallocTreeNode("operationTreeId", funCallOperationIdNodeString, 1);
