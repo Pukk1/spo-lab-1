@@ -221,6 +221,7 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
     return node;
 }
 
+//чтобы сгенерировать название для ноды
 char *expressionNodeToString(TreeNode *treeNode) {
     if (treeNode->childrenNumber == 0) {
         return mallocString(treeNode->value);
@@ -378,9 +379,17 @@ ExecutionNode *executionNode(TreeNode *treeNode, ExecutionNode *nextNode,
     }
 }
 
+// декларация тела функции
+ExecutionNode *listStatementExecutionNode(TreeNode *funcDefNode, ExecutionNode *nextNode, FunCalls *funCalls) {
+    ExecutionNode *listStatements = nextNode;
+    if (funcDefNode->childrenNumber == 2) {
+        listStatements = executionNode(funcDefNode->childNodes[1], nextNode, NULL, funCalls);
+    }
+    return listStatements;
+}
+
 // декларация аргументов функции
-ExecutionNode *functionArgsExecutionNode(TreeNode *functionSignatureNode, ExecutionNode *nextNode,
-                                         ExecutionNode *breakNode, FunCalls *funCalls) {
+ExecutionNode *functionArgsExecutionNode(TreeNode *functionSignatureNode, ExecutionNode *nextNode) {
     ExecutionNode *node = initExecutionNode("");
     node->definitely = nextNode;
     if (functionSignatureNode->childrenNumber > 0 &&
@@ -407,28 +416,30 @@ ExecutionNode *functionArgsExecutionNode(TreeNode *functionSignatureNode, Execut
 ExecutionNode *initGraph(TreeNode *sourceItem, FunCalls *funCalls) {
     ExecutionNode *startNode = initExecutionNode("START");
     ExecutionNode *endNode = initExecutionNode("FINISH");
-    TreeNode *funcDef = sourceItem->childNodes[0];
+    TreeNode *funcDefNode = sourceItem->childNodes[0];
+    TreeNode *funcSignatureNode = funcDefNode->childNodes[0];
 
-    ExecutionNode *listStatements = endNode;
-    if (funcDef->childrenNumber == 2) {
-        listStatements =
-                executionNode(funcDef->childNodes[1], endNode, NULL, funCalls);
-    }
-    ExecutionNode *functionArgs =
-            functionArgsExecutionNode(funcDef->childNodes[0], listStatements, NULL, funCalls);
+    ExecutionNode *listStatements = listStatementExecutionNode(funcDefNode, endNode, funCalls);
+    ExecutionNode *functionArgs = functionArgsExecutionNode(funcSignatureNode, listStatements);
+
     startNode->definitely = functionArgs;
     return startNode;
 }
 
-SourceItemExecution *funExecutionGraph(char *filename, TreeNode *sourceItemElement, bool isMethod) {
+SourceItemExecution *funExecutionGraph(char *filename, TreeNode *sourceItemNode, bool isMethod) {
     SourceItemExecution *sourceItemExecution = malloc(sizeof(SourceItemExecution));
     sourceItemExecution->isMethod = isMethod;
     sourceItemExecution->filename = filename;
-    sourceItemExecution->name = sourceItemElement->childNodes[0]->childNodes[0]->value;
+    TreeNode *funcDefNode = sourceItemNode->childNodes[0];
+    TreeNode *funcSignatureNode = funcDefNode->childNodes[0];
+    char *funcName = funcSignatureNode->value;
+    sourceItemExecution->name = funcName;
 
     List *functions = mallocEmptyList();
     FunCalls funCalls = (FunCalls) {functions, sourceItemExecution->name};
-    sourceItemExecution->nodes = initGraph(sourceItemElement, &funCalls);
+
+    sourceItemExecution->nodes = initGraph(sourceItemNode, &funCalls);
+
     TreeNode *funCallsRoot = mallocTreeNode("currentFunction", sourceItemExecution->name,
                                             funCalls.funCalls->size);
     for (int k = 0; k < funCalls.funCalls->size; ++k) {

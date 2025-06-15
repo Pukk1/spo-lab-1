@@ -1,4 +1,4 @@
-function main()
+function main(a as int, b as string)
     dim str as string
     dim b as ASD
     str = "str";

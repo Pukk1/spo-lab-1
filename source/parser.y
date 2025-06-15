@@ -220,7 +220,7 @@ braces: LPAREN expr RPAREN  {{TreeNode* elements[] = {$2};$$ = createNode("brace
 
 call: expr LPAREN listExpr RPAREN   {{TreeNode* elements[] = {$1, $3};$$ = createNode("call", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-index: expr LBRACK expr RBRACK    {{TreeNode* elements[] = {$1, $3};$$ = createNode("indexer", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+index: expr LBRACK expr RBRACK    {{TreeNode* elements[] = {$1, $3};$$ = createNode("index", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 listExpr:                   {{$$ = NULL;}}
     | expr listExpr         {{TreeNode* elements[] = {$1, $2};$$ = createNode("listExpr", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
