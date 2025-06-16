@@ -1,4 +1,4 @@
-class a
+class A
     public dim a as int
 
     public function test()
@@ -6,7 +6,7 @@ class a
     end function
 end class
 
-function a_constructor()
+function A()
     dim members as string(,,)(,,)
     members[0][0] = "a";
     members[0][1] = 0;
