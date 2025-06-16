@@ -140,25 +140,9 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
                                   argumentNumber);
         fprintln("SAVE", listingFile);
     } else if (!strcmp(operationType, "READ")) {
-        TreeNode *readPlace = operationTree->childNodes[0];
-        if (!strcmp(readPlace->type, "READ_VAR")) {
-            ValuePlaceAssociation *valuePlace = findValuePlace(valuePlaceAssociations, readPlace->value);
-            if (valuePlace == NULL) {
-                char exceptionMessage[1000];
-                sprintf(exceptionMessage, "value place not found by name %s", readPlace->value);
-                printException(exceptionMessage);
-                return;
-            }
-            char valuePlaceShift[1000];
-            sprintf(valuePlaceShift, "%d", valuePlace->shiftPosition);
-            fprintlnWithArg("LOAD_BP", valuePlaceShift, listingFile);
-        } else {
-//            TODO
-        }
-        if (operationTree->childrenNumber > 1) {
-            tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations,
-                                      argumentNumber);
-        }
+        TreeNode *placeLink = operationTree->childNodes[1];
+        tryPrintOperationTreeNode(placeLink, listingFile, valuePlaceAssociations, argumentNumber);
+        fprintln("LOAD", listingFile);
     } else if (!strcmp(operationType, "LOCAL_PLACE_LINK")) {
         TreeNode *local_place_link = operationTree;
         ValuePlaceAssociation *valuePlace = findValuePlace(valuePlaceAssociations, local_place_link->value);
