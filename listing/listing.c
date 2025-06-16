@@ -73,6 +73,10 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
         addValuePlace(valuePlaceAssociations, operationTree->childNodes[1]->value);
         fprintln("PUSH 0", listingFile);
         fprintln("PUSH 0", listingFile);
+    } else if (!strcmp(operationType, "FUNCTION_FOR_CALL_NAME")) {
+        char *functionName = operationTree->value;
+        fprintlnWithArg("PUSH", "4", listingFile);
+        fprintlnWithArg("PUSH", functionName, listingFile);
     } else if (!strcmp(operationType, "CONST")) {
         if (!strcmp(operationTree->childNodes[0]->value, "int")) {
             fprintlnWithArg("PUSH", "1", listingFile);
