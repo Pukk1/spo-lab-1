@@ -130,8 +130,32 @@ ExecutionNode *executionVarNode(TreeNode *treeNode, ExecutionNode *nextNode,
 TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
     TreeNode *node = NULL;
 
-    if (!strcmp(parsingTree->type, "braces")) {
-        return operationTreeNode(parsingTree->childNodes[0], funCalls);
+    if (!strcmp(parsingTree->type, "functionForCallName")) {
+        node = mallocTreeNode("READ_STATIC_FUNCTION_NAME", parsingTree->value, 0);
+    } else if (!strcmp(parsingTree->type, "readPlace")) {
+        node = mallocTreeNode("READ_PLACE", NULL, 1);
+        node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0], funCalls);
+    } else if (!strcmp(parsingTree->type, "call")) {
+        if (parsingTree->childrenNumber == 1) {
+            node = mallocTreeNode("EXECUTE", NULL, 1);
+        } else {
+            List argsList = findListItemsUtil(parsingTree->childNodes[1]);
+            node = mallocTreeNode("EXECUTE", NULL, 1 + argsList.size);
+            for (int i = 0; i < argsList.size; ++i) {
+                node->childNodes[1 + i] = operationTreeNode(argsList.elements[i], funCalls);
+            }
+        }
+        node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0], funCalls);
+
+//        funcalls
+        char funCallOperationIdNodeString[1024];
+        sprintf(funCallOperationIdNodeString, "%d", node->id);
+        TreeNode *funCallOperationIdNode = mallocTreeNode("operationTreeId", funCallOperationIdNodeString, 1);
+        TreeNode *calledFunNameNode = mallocTreeNode("call", parsingTree->childNodes[0]->value, 0);
+        funCallOperationIdNode->childNodes[0] = calledFunNameNode;
+        addToList(funCalls->funCalls, funCallOperationIdNode);
+    } else if (!strcmp(parsingTree->type, "variable")) {
+        node = mallocTreeNode("READ_VAR", parsingTree->value, 0);
     } else if (!strcmp(parsingTree->type, "variable")) {
         node = mallocTreeNode("READ_VAR", parsingTree->value, 0);
     } else if (!strcmp(parsingTree->type, "field")) {
@@ -164,29 +188,8 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
         }
         node->childNodes[1]->childNodes[0] = mallocTreeNode(NULL, "const: 1", 0);
         node->childNodes[1]->childNodes[1] = operationTreeNode(parsingTree->childNodes[0], funCalls);
-    } else if (!strcmp(parsingTree->type, "call")) {
-//        на загрузку самой функции
-        int baseChildNodesNumber = 1;
-        if (parsingTree->childrenNumber == 1) {
-            node = mallocTreeNode("EXECUTE", NULL, baseChildNodesNumber);
-        } else {
-            List argsList = findListItemsUtil(parsingTree->childNodes[1]);
-            node = mallocTreeNode("EXECUTE", NULL, baseChildNodesNumber + argsList.size);
-            for (int i = 0; i < argsList.size; ++i) {
-                node->childNodes[i + baseChildNodesNumber] = operationTreeNode(argsList.elements[i], funCalls);
-            }
-        }
-        node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0], funCalls);
-
-//        funcalls
-        char funCallOperationIdNodeString[1024];
-        sprintf(funCallOperationIdNodeString, "%d", node->id);
-        TreeNode *funCallOperationIdNode = mallocTreeNode("operationTreeId", funCallOperationIdNodeString, 1);
-        TreeNode *calledFunNameNode = mallocTreeNode("call", parsingTree->childNodes[0]->value, 0);
-        funCallOperationIdNode->childNodes[0] = calledFunNameNode;
-        addToList(funCalls->funCalls, funCallOperationIdNode);
     } else if (parsingTree->childrenNumber == 2) {
-//        SET и ещё что-то
+//        бинарные операции
         node = mallocTreeNode(parsingTree->type, parsingTree->value, parsingTree->childrenNumber);
         node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0], funCalls);
         node->childNodes[1] = operationTreeNode(parsingTree->childNodes[1], funCalls);
