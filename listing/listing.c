@@ -171,7 +171,7 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
         tryPrintOperationTreeNode(indexNode, listingFile, valuePlaceAssociations, argumentNumber);
 
         fprintlnWithArg("PUSH", "4", listingFile);
-        fprintlnWithArg("PUSH", "2", listingFile);
+        fprintlnWithArg("PUSH", "16", listingFile);
         fprintln("MUL", listingFile);
         fprintln("SUM", listingFile);
     } else if (!strcmp(operationType, "EQUALITY")) {
@@ -275,7 +275,9 @@ void tryPrintNode(ExecutionNode *executionNode, FILE *listingFile, List *valuePl
 void printListing(List *funExecutions, FILE *listingFile) {
     fprintln("[section ram]", listingFile);
     fprintln("INIT code_end_addr", listingFile);
-    fprintln("CALL_STATIC main", listingFile);
+    fprintln("PUSH 4", listingFile);
+    fprintln("PUSH main", listingFile);
+    fprintln("CALL", listingFile);
     fprintln("POP", listingFile);
     fprintln("HLT", listingFile);
     for (int i = 0; i < funExecutions->size; ++i) {
