@@ -145,12 +145,12 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
         tryPrintOperationTreeNode(placeLink, listingFile, valuePlaceAssociations, argumentNumber);
         fprintln("LOAD", listingFile);
     } else if (!strcmp(operationType, "LOCAL_PLACE_LINK")) {
-        TreeNode *local_place_link = operationTree;
-        ValuePlaceAssociation *valuePlace = findValuePlace(valuePlaceAssociations, local_place_link->value);
+        TreeNode *localPlaceLink = operationTree;
+        ValuePlaceAssociation *valuePlace = findValuePlace(valuePlaceAssociations, localPlaceLink->value);
 
         if (valuePlace == NULL) {
             char exceptionMessage[1000];
-            sprintf(exceptionMessage, "value place not found by name %s", local_place_link->value);
+            sprintf(exceptionMessage, "value place not found by name %s", localPlaceLink->value);
             printException(exceptionMessage);
             return;
         }
@@ -163,6 +163,17 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
             tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations,
                                       argumentNumber);
         }
+    } else if (!strcmp(operationType, "INDEX_PLACE_LINK")) {
+        TreeNode *indexPlaceLinkNode = operationTree;
+        TreeNode *placeLinkForIndexingNode = indexPlaceLinkNode->childNodes[0];
+        TreeNode *indexNode = indexPlaceLinkNode->childNodes[1];
+        tryPrintOperationTreeNode(placeLinkForIndexingNode, listingFile, valuePlaceAssociations, argumentNumber);
+        tryPrintOperationTreeNode(indexNode, listingFile, valuePlaceAssociations, argumentNumber);
+
+        fprintlnWithArg("PUSH", "4", listingFile);
+        fprintlnWithArg("PUSH", "2", listingFile);
+        fprintln("MUL", listingFile);
+        fprintln("SUM", listingFile);
     } else if (!strcmp(operationType, "EQUALITY")) {
         tryPrintOperationTreeNode(operationTree->childNodes[0], listingFile, valuePlaceAssociations, argumentNumber);
         tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);
