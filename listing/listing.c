@@ -141,7 +141,7 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
                                   argumentNumber);
         fprintln("SAVE", listingFile);
     } else if (!strcmp(operationType, "READ")) {
-        TreeNode *placeLink = operationTree->childNodes[1];
+        TreeNode *placeLink = operationTree->childNodes[0];
         tryPrintOperationTreeNode(placeLink, listingFile, valuePlaceAssociations, argumentNumber);
         fprintln("LOAD", listingFile);
     } else if (!strcmp(operationType, "LOCAL_PLACE_LINK")) {
