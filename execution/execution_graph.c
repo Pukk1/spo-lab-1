@@ -133,8 +133,24 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
     if (!strcmp(parsingTree->type, "functionForCallName")) {
         node = mallocTreeNode("READ_STATIC_FUNCTION_NAME", parsingTree->value, 0);
     } else if (!strcmp(parsingTree->type, "readPlace")) {
-        node = mallocTreeNode("READ_PLACE", NULL, 1);
+        node = mallocTreeNode("READ", NULL, 1);
         node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0], funCalls);
+    } else if (!strcmp(parsingTree->type, "localPlaceLink")) {
+        node = mallocTreeNode("READ_VAR", parsingTree->value, 0);
+    } else if (!strcmp(parsingTree->type, "objectMember")) {
+        node = mallocTreeNode("READ_OBJECT_MEMBER", parsingTree->value, 0);
+    } else if (!strcmp(parsingTree->type, "SET")) {
+        node = mallocTreeNode("SET", NULL, 2);
+        node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0], funCalls);
+        node->childNodes[1] = operationTreeNode(parsingTree->childNodes[1], funCalls);
+    } else if (!strcmp(parsingTree->type, "objectMemberPlaceLink")) {
+        node = mallocTreeNode("OBJECT_MEMBER_PLACE_LINK", NULL, 2);
+        node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0], funCalls);
+        node->childNodes[1] = operationTreeNode(parsingTree->childNodes[1], funCalls);
+    } else if (!strcmp(parsingTree->type, "indexPlaceLink")) {
+        node = mallocTreeNode("INDEX_PLACE_LINK", NULL, 2);
+        node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0], funCalls);
+        node->childNodes[1] = operationTreeNode(parsingTree->childNodes[1], funCalls);
     } else if (!strcmp(parsingTree->type, "call")) {
         if (parsingTree->childrenNumber == 1) {
             node = mallocTreeNode("EXECUTE", NULL, 1);
@@ -154,26 +170,6 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
         TreeNode *calledFunNameNode = mallocTreeNode("call", parsingTree->childNodes[0]->value, 0);
         funCallOperationIdNode->childNodes[0] = calledFunNameNode;
         addToList(funCalls->funCalls, funCallOperationIdNode);
-    } else if (!strcmp(parsingTree->type, "variable")) {
-        node = mallocTreeNode("READ_VAR", parsingTree->value, 0);
-    } else if (!strcmp(parsingTree->type, "variable")) {
-        node = mallocTreeNode("READ_VAR", parsingTree->value, 0);
-    } else if (!strcmp(parsingTree->type, "field")) {
-        node = mallocTreeNode("READ_FIELD", parsingTree->value, 0);
-    } else if (!strcmp(parsingTree->type, "placeChain")) {
-        bool chainHasSeveralNodes = false;
-        if (parsingTree->childrenNumber > 1) {
-            chainHasSeveralNodes = true;
-        }
-
-        if (chainHasSeveralNodes) {
-            node = mallocTreeNode("READ", NULL, 2);
-            node->childNodes[1] = operationTreeNode(parsingTree->childNodes[1], funCalls);
-        } else {
-            node = mallocTreeNode("READ", NULL, 1);
-        }
-        node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0], funCalls);
-
     } else if (!strcmp(parsingTree->type, "INCREMENT") || !strcmp(parsingTree->type, "DECREMENT")) {
         node = mallocTreeNode("SET", NULL, 2);
         char valuePlace[1024];
@@ -189,8 +185,8 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
         node->childNodes[1]->childNodes[0] = mallocTreeNode(NULL, "const: 1", 0);
         node->childNodes[1]->childNodes[1] = operationTreeNode(parsingTree->childNodes[0], funCalls);
     } else if (parsingTree->childrenNumber == 2) {
-//        бинарные операции
-        node = mallocTreeNode(parsingTree->type, parsingTree->value, parsingTree->childrenNumber);
+//        бинарные операции + set + listExpr
+        node = mallocTreeNode(parsingTree->type, parsingTree->value, 2);
         node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0], funCalls);
         node->childNodes[1] = operationTreeNode(parsingTree->childNodes[1], funCalls);
     } else if (parsingTree->childrenNumber == 0) {
