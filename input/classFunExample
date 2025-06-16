@@ -8,9 +8,9 @@ end class
 
 function a_constructor()
     dim members as string(,,)(,,)
-    members(0)(0) = "a";
-    members(0)(1) = 0;
-    members(1)(0) = "test";
-    members(1)(1) = "function lable";
+    members[0][0] = "a";
+    members[0][1] = 0;
+    members[1][0] = "test";
+    members[1][1] = "function lable";
     members;
 end function

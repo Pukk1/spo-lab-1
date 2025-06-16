@@ -223,14 +223,14 @@ braces: LPAREN expr RPAREN  {{$$ = $1;}};
 readPlace: placeLink           {{TreeNode* elements[] = {$1};$$ = createNode("readPlace", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 callPlaceLink: IDENTIFIER           {{TreeNode* elements[] = {$1};$$ = createNode("functionForCallName", NULL, elements[0]->value);}}
-    | linkedPlaceLink               {{$$ = $1;}};
+    | linkedPlaceLink               {{TreeNode* elements[] = {$1};$$ = createNode("readPlace", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 placeLink: localPlaceLink       {{$$ = $1;}}
     | linkedPlaceLink           {{$$ = $1;}};
 
 call: callPlaceLink LPAREN listExpr RPAREN   {{TreeNode* elements[] = {$1, $3};$$ = createNode("call", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-indexPlaceLink: placeLink LBRACK expr RBRACK    {{TreeNode* elements[] = {$1, $3};$$ = createNode("indexPlaceLink", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+indexPlaceLink: readPlace LBRACK expr RBRACK    {{TreeNode* elements[] = {$1, $3};$$ = createNode("indexPlaceLink", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 objectMemberPlaceLink: expr DOT objectMember    {{TreeNode* elements[] = {$1, $3};$$ = createNode("objectMemberPlaceLink", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 

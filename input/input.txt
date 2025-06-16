@@ -1,8 +1,7 @@
 function main(a as int, b as string)
     dim str as string
-    dim b as ASD
-    str = "str";
-    str[0] = 'b';
-    b = str[1];
-    b.sad = 'a';
+    asd();
+    str.asd();
+    asd[0];
+    str.asd[0]();
 end function
