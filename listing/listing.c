@@ -132,29 +132,13 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
             fprintln("EXCEPTION", listingFile);
         }
     } else if (!strcmp(operationType, "SET")) {
-        List readPlaces = findListItemsUtil(operationTree->childNodes[0]);
-        if (readPlaces.size == 1) {
-            char *readPlace = ((TreeNode *) readPlaces.elements[0])->value;
-            tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations,
-                                      argumentNumber);
-            ValuePlaceAssociation *valuePlace = findValuePlace(valuePlaceAssociations,
-                                                               readPlace);
-            if (valuePlace == NULL) {
-                char exceptionMessage[1000];
-                sprintf(exceptionMessage, "value place not found by name %s", readPlace);
-                printException(exceptionMessage);
-                return;
-            }
-            char valuePlaceShift[1000];
-            sprintf(valuePlaceShift, "%d", valuePlace->shiftPosition);
-            fprintlnWithArg("SAVE_BP", valuePlaceShift, listingFile);
-        } else {
-            tryPrintOperationTreeNode(operationTree->childNodes[0], listingFile, valuePlaceAssociations,
-                                      argumentNumber);
-            tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations,
-                                      argumentNumber);
-            fprintln("SAVE", listingFile);
-        }
+        TreeNode *placeNode = operationTree->childNodes[0];
+        TreeNode *valueNode = operationTree->childNodes[1];
+        tryPrintOperationTreeNode(placeNode, listingFile, valuePlaceAssociations,
+                                  argumentNumber);
+        tryPrintOperationTreeNode(valueNode, listingFile, valuePlaceAssociations,
+                                  argumentNumber);
+        fprintln("SAVE", listingFile);
     } else if (!strcmp(operationType, "READ")) {
         TreeNode *readPlace = operationTree->childNodes[0];
         if (!strcmp(readPlace->type, "READ_VAR")) {
