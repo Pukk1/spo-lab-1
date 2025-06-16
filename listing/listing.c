@@ -70,10 +70,7 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
         (*argumentNumber)++;
         addArgumentPlace(valuePlaceAssociations, operationTree->childNodes[1]->value);
     } else if (!strcmp(operationType, "AS")) {
-        addValuePlace(
-                valuePlaceAssociations,
-                operationTree->childNodes[1]->value
-        );
+        addValuePlace(valuePlaceAssociations, operationTree->childNodes[1]->value);
         fprintln("PUSH 0", listingFile);
         fprintln("PUSH 0", listingFile);
     } else if (!strcmp(operationType, "CONST")) {
@@ -224,7 +221,7 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
             fprintln("CALL", listingFile);
         }
     } else {
-        fprintln("EXCEPTION", listingFile);
+        printException(operationType);
     }
 }
 
