@@ -127,7 +127,7 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
     TreeNode *node = NULL;
 
     if (!strcmp(parsingTree->type, "functionForCallName")) {
-        node = mallocTreeNode("READ_STATIC_FUNCTION_NAME", parsingTree->value, 0);
+        node = mallocTreeNode("FUNCTION_FOR_CALL_NAME", parsingTree->value, 0);
     } else if (!strcmp(parsingTree->type, "readPlace")) {
         node = mallocTreeNode("READ", NULL, 1);
         node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0], funCalls);

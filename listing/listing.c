@@ -188,12 +188,15 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
         tryPrintOperationTreeNode(operationTree->childNodes[1], listingFile, valuePlaceAssociations, argumentNumber);
         fprintln("MOD", listingFile);
     } else if (!strcmp(operationType, "EXECUTE")) {
-        List readPlaces = findListItemsUtil(operationTree->childNodes[0]);
-        if (readPlaces.size == 1) {
-            char *readPlace = ((TreeNode *) readPlaces.elements[0])->value;
-            if (!strcmp(readPlace, "stdin")) {
+        TreeNode *staticFunctionOrLinkNode = operationTree->childNodes[0];
+        if (!strcmp(staticFunctionOrLinkNode->type, "FUNCTION_FOR_CALL_NAME") &&
+            !strcmp(staticFunctionOrLinkNode->value, "stdin") &&
+            !strcmp(staticFunctionOrLinkNode->value, "stdout")) {
+
+            char *staticFunctionName = staticFunctionOrLinkNode->value;
+            if (!strcmp(staticFunctionName, "stdin")) {
                 fprintln("LOAD_IN", listingFile);
-            } else if (!strcmp(readPlace, "stdout")) {
+            } else {
                 tryPrintOperationTreeNode(
                         operationTree->childNodes[1],
                         listingFile,
@@ -201,12 +204,6 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
                         argumentNumber
                 );
                 fprintln("SAVE_OUT", listingFile);
-            } else {
-                for (int i = 1; i < operationTree->childrenNumber; ++i) {
-                    tryPrintOperationTreeNode(operationTree->childNodes[i], listingFile, valuePlaceAssociations,
-                                              argumentNumber);
-                }
-                fprintlnWithArg("CALL_STATIC", readPlace, listingFile);
             }
         } else {
 //            аргументы

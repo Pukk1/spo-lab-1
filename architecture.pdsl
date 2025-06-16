@@ -255,13 +255,12 @@ architecture spo309681 {
             IP = addr;
         };
 
-        instruction call_static = { 0001 0000 0000 0000, imm64 as addr } {
-            SP = SP - 8;
-            ram:8[SP] = BP;
-            SP = SP - 8;
-            ram:8[SP] = IP + 10;
-            BP = SP;
-            IP = addr;
+        instruction call = { 0001 0000 0000 0000 } {
+                    let addr = ram:8[SP];
+                    ram:8[SP + 8] = BP;
+                    ram:8[SP] = IP + 2;
+                    BP = SP;
+                    IP = addr;
         };
 
         instruction ret = { 0010 0000 0000 0000, imm64 as arg_number } {
@@ -325,7 +324,7 @@ architecture spo309681 {
         mnemonic JNZ for jnz(addr) "{1}";
         mnemonic JMP for jmp(addr) "{1}";
 
-        mnemonic CALL_STATIC for call_static(addr) "{1}";
+        mnemonic CALL for call();
         mnemonic RET for ret(arg_number) "{1}";
 
         mnemonic ALLOC for alloc(byte_size) "{1}";
