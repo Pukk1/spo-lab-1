@@ -122,6 +122,24 @@ TreeNode *findThisObjectFirstArgumentOrNull(TreeNode *executeNode, FunCalls *fun
     }
 }
 
+TreeNode *objectMemberPlaceLinkOperationTreeNode(TreeNode *objectMemberPlaceLinkNode, FunCalls *funCalls) {
+    TreeNode *callNode = mallocTreeNode("call", NULL, 2);
+    TreeNode *functionForCallNameNode = mallocTreeNode("functionForCallName", "find_object_member_by_name", 0);
+    callNode->childNodes[0] = functionForCallNameNode;
+
+    TreeNode *readObjectTreeNode = objectMemberPlaceLinkNode->childNodes[0];
+    TreeNode *objectArgumentListExprNode = initListExprNode(readObjectTreeNode, callNode, true);
+
+    TreeNode *objectMemberNode = objectMemberPlaceLinkNode->childNodes[1];
+    char *objectMemberName = objectMemberNode->value;
+    initListExprNode(
+            mallocTreeNode("STR", objectMemberName, 0),
+            objectArgumentListExprNode,
+            false
+    );
+    return operationTreeNode(callNode, funCalls);
+}
+
 // для построения дерева операций
 TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
     TreeNode *node = NULL;
@@ -140,9 +158,7 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
         node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0], funCalls);
         node->childNodes[1] = operationTreeNode(parsingTree->childNodes[1], funCalls);
     } else if (!strcmp(parsingTree->type, "objectMemberPlaceLink")) {
-        node = mallocTreeNode("OBJECT_MEMBER_PLACE_LINK", NULL, 2);
-        node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0], funCalls);
-        node->childNodes[1] = operationTreeNode(parsingTree->childNodes[1], funCalls);
+        node = objectMemberPlaceLinkOperationTreeNode(parsingTree, funCalls);
     } else if (!strcmp(parsingTree->type, "indexPlaceLink")) {
         node = mallocTreeNode("INDEX_PLACE_LINK", NULL, 2);
         node->childNodes[0] = operationTreeNode(parsingTree->childNodes[0], funCalls);
@@ -460,35 +476,6 @@ TreeNode *initFuncDefNode(char *funName, bool hasMembers) {
     TreeNode *funcSignatureNode = mallocTreeNode("funcSignature", funName, 0);
     funcDefNode->childNodes[0] = funcSignatureNode;
     return funcDefNode;
-}
-
-TreeNode *initBinaryListNode(TreeNode *valueNode, TreeNode *previousListNode, bool hasNext, char *nodeName) {
-    int childNumber = 1;
-    if (hasNext) {
-        childNumber = 2;
-    }
-    TreeNode *listNode = mallocTreeNode(nodeName, NULL, childNumber);
-    listNode->childNodes[0] = valueNode;
-    previousListNode->childNodes[1] = listNode;
-    return listNode;
-}
-
-TreeNode *initListStatementNode(TreeNode *statementNode, TreeNode *previousStatementListNode, bool hasNext) {
-    return initBinaryListNode(
-            statementNode,
-            previousStatementListNode,
-            hasNext,
-            "listStatement"
-    );
-}
-
-TreeNode *initListExprNode(TreeNode *exprNode, TreeNode *previousExprListNode, bool hasNext) {
-    return initBinaryListNode(
-            exprNode,
-            previousExprListNode,
-            hasNext,
-            "listExpr"
-    );
 }
 
 TreeNode *initDimMembersNode() {

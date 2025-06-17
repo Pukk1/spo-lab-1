@@ -69,3 +69,32 @@ ChildNodes *mallocChildNodes(int size, TreeNode **nodesArg) {
         return NULL;
     }
 }
+
+TreeNode *initBinaryListNode(TreeNode *valueNode, TreeNode *previousListNode, bool hasNext, char *nodeName) {
+    int childNumber = 1;
+    if (hasNext) {
+        childNumber = 2;
+    }
+    TreeNode *listNode = mallocTreeNode(nodeName, NULL, childNumber);
+    listNode->childNodes[0] = valueNode;
+    previousListNode->childNodes[1] = listNode;
+    return listNode;
+}
+
+TreeNode *initListStatementNode(TreeNode *statementNode, TreeNode *previousStatementListNode, bool hasNext) {
+    return initBinaryListNode(
+            statementNode,
+            previousStatementListNode,
+            hasNext,
+            "listStatement"
+    );
+}
+
+TreeNode *initListExprNode(TreeNode *exprNode, TreeNode *previousExprListNode, bool hasNext) {
+    return initBinaryListNode(
+            exprNode,
+            previousExprListNode,
+            hasNext,
+            "listExpr"
+    );
+}

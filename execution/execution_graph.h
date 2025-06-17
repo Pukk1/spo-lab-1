@@ -12,6 +12,7 @@
 #include "../common/exception/exception_util.h"
 #include <string.h>
 #include <stdbool.h>
+#include "../node/node.h"
 
 typedef struct FilenameParseTree FilenameParseTree;
 
