@@ -209,8 +209,7 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
     } else if (!strcmp(operationType, "EXECUTE")) {
         TreeNode *staticFunctionOrLinkNode = operationTree->childNodes[0];
         if (!strcmp(staticFunctionOrLinkNode->type, "FUNCTION_FOR_CALL_NAME") &&
-            !strcmp(staticFunctionOrLinkNode->value, "stdin") &&
-            !strcmp(staticFunctionOrLinkNode->value, "stdout")) {
+            (!strcmp(staticFunctionOrLinkNode->value, "stdin") || !strcmp(staticFunctionOrLinkNode->value, "stdout"))) {
 
             char *staticFunctionName = staticFunctionOrLinkNode->value;
             if (!strcmp(staticFunctionName, "stdin")) {
