@@ -459,7 +459,8 @@ SourceItemExecution *funExecutionGraph(char *filename, TreeNode *sourceItemNode,
 //    constructorFunExecution->name = mallocString(classExecutionName);
 ////    нужна возможность инициализировать массив
 ////    нужна возможность передавать label функции как константу, чтобы ею можно было заполнить массив
-////    нужна возможность сравнивать строки по значению (дефолтное поведение)
+////    нужна возможность сравнивать строки по значению (сделать через либы)
+////    возможность подкючать либы
 ////    нужна возможность создавать функции-конструкторы классов
 //    List classMembers = findListItemsUtil()
 //    for (int i = 0; i < ; ++i) {
