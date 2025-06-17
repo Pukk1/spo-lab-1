@@ -95,8 +95,8 @@ function strcmp(s1 as string, s2 as string) as bool
     result;
 end function
 
-function find_object_member_by_name(object as int, name as string) as int
-    dim result as int
+function find_object_member_by_name(object as string, name as string) as string
+    dim result as string
     dim count as int
     dim tmp_result as bool
 
@@ -105,7 +105,7 @@ function find_object_member_by_name(object as int, name as string) as int
     while object[count][0] != 0
         tmp_result = strcmp(object[count][0], name);
         if tmp_result == true then
-            result = object[count][0];
+            result = object[count] + 16;
         end if
     wend
     result;
@@ -113,6 +113,7 @@ end function
 
 function init_object_member(name as string, value as int, is_public as bool)
     dim member as string(,,,)
+    member = "   ";
     member[0] = name;
     member[1] = value;
     member[2] = is_public;

@@ -5,5 +5,5 @@
 #include "exception_util.h"
 
 void printException(char *message) {
-    fprintf(stderr, "EXCEPTION: %s", message);
+    fprintf(stderr, "EXCEPTION: %s \n", message);
 }
