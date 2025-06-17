@@ -210,6 +210,8 @@ TreeNode *operationTreeNode(TreeNode *parsingTree, FunCalls *funCalls) {
             typeByLiteral = "str";
         } else if (!strcmp(parsingTree->type, "BOOL")) {
             typeByLiteral = "bool";
+        } else if (!strcmp(parsingTree->type, "LABEL")) {
+            typeByLiteral = "label";
         }
         char constVal[1024];
         sprintf(constVal, "%s", typeByLiteral);
@@ -447,13 +449,24 @@ SourceItemExecution *funExecutionGraph(char *filename, TreeNode *sourceItemNode,
     return sourceItemExecution;
 }
 
-//void classExecutionsGraphs(char *filename, TreeNode *sourceItemElement, Array *funExecutionsResultArray) {
-//    SourceItemExecution *classExecution = malloc(sizeof(SourceItemExecution));
-//    classExecution->filename = filename;
+//SourceItemExecution *classExecutionsGraphs(char *filename, TreeNode *sourceItemElement) {
+//    TreeNode *classDefNode = sourceItemElement->childNodes[0];
+//    TreeNode *classIdentifierNode = classDefNode->childNodes[0];
+//    SourceItemExecution *constructorFunExecution = malloc(sizeof(SourceItemExecution));
+//    constructorFunExecution->filename = filename;
 //    char classExecutionName[1024];
-//    strcpy(classExecutionName, filename);
-//    strcat(classExecutionName, sourceItemElement->childNodes[0]->childNodes[0]->value);
-//    classExecution->name = mallocString(classExecutionName);
+//    strcpy(classExecutionName, classIdentifierNode->value);
+//    constructorFunExecution->name = mallocString(classExecutionName);
+////    нужна возможность инициализировать массив
+////    нужна возможность передавать label функции как константу, чтобы ею можно было заполнить массив
+////    нужна возможность сравнивать строки по значению (дефолтное поведение)
+////    нужна возможность создавать функции-конструкторы классов
+//    List classMembers = findListItemsUtil()
+//    for (int i = 0; i < ; ++i) {
+//
+//    }
+//
+//    return constructorFunExecution;
 //}
 
 List *executionGraph(FilenameParseTree *input, int size) {
@@ -464,13 +477,13 @@ List *executionGraph(FilenameParseTree *input, int size) {
         List sourceItems = findSourceItems(findSourceNode(currentFileParseTree));
         for (int j = 0; j < sourceItems.size; ++j) {
             TreeNode *sourceItem = sourceItems.elements[j];
+            void *sourceItemExecution;
             if (!strcmp(sourceItem->childNodes[0]->type, "funcDef")) {
-                void *sourceItemExecution = funExecutionGraph(currentFileParseTree.filename, sourceItem, false);
-                addToList(result, sourceItemExecution);
+                sourceItemExecution = funExecutionGraph(currentFileParseTree.filename, sourceItem, false);
             } else {
-//                TODO
-//                classExecutionsGraphs(currentFileParseTree.filename, sourceItem, result);
+//                sourceItemExecution = classExecutionsGraphs(currentFileParseTree.filename, sourceItem);
             }
+            addToList(result, sourceItemExecution);
         }
     }
     return result;

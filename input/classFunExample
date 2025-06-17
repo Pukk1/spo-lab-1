@@ -7,10 +7,17 @@ class A
 end class
 
 function A()
-    dim members as string(,,)(,,)
+    dim members as string(,,)(,,,)
+    members = "aa";
+    members[0] = "aaa";
+    members[1] = "aaa";
+    //где "a" - название, 0 - значение ссылки, 1 - модификатор доступа
     members[0][0] = "a";
     members[0][1] = 0;
+    members[0][2] = 1;
     members[1][0] = "test";
-    members[1][1] = "function lable";
+    members[1][1] = <test function lable>;
+    members[1][2] = 1;
+    //members = [["a", 0, 1], ["test", <test function lable>, 1]];
     members;
 end function

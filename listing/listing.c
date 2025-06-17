@@ -78,36 +78,37 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
         fprintlnWithArg("PUSH", "4", listingFile);
         fprintlnWithArg("PUSH", functionName, listingFile);
     } else if (!strcmp(operationType, "CONST")) {
-        if (!strcmp(operationTree->childNodes[0]->value, "int")) {
+        char *constType = operationTree->childNodes[0]->value;
+        char *constValue = operationTree->childNodes[1]->value;
+        if (!strcmp(constType, "int")) {
             fprintlnWithArg("PUSH", "1", listingFile);
-            fprintlnWithArg("PUSH", operationTree->childNodes[1]->value, listingFile);
-        } else if (!strcmp(operationTree->childNodes[0]->value, "char")) {
+            fprintlnWithArg("PUSH", constValue, listingFile);
+        } else if (!strcmp(constType, "char")) {
             char value[1];
-            sprintf(value, "%d", (int) operationTree->childNodes[1]->value[0]);
+            sprintf(value, "%d", (int) constValue[0]);
             fprintlnWithArg("PUSH", "3", listingFile);
             fprintlnWithArg("PUSH", value, listingFile);
-        } else if (!strcmp(operationTree->childNodes[0]->value, "bool")) {
-            if (!strcmp(operationTree->childNodes[1]->value, "true")) {
+        } else if (!strcmp(constType, "bool")) {
+            if (!strcmp(constValue, "true")) {
                 fprintlnWithArg("PUSH", "1", listingFile);
                 fprintlnWithArg("PUSH", "1", listingFile);
             } else {
                 fprintlnWithArg("PUSH", "1", listingFile);
                 fprintlnWithArg("PUSH", "0", listingFile);
             }
-        } else if (!strcmp(operationTree->childNodes[0]->value, "str")) {
-            char *str = operationTree->childNodes[1]->value;
-            int str_len = strlen(str);
+        } else if (!strcmp(constType, "str")) {
+            int valueStrSize = strlen(constValue);
             char alloc_size[30];
-            sprintf(alloc_size, "%d", str_len * 2 + 2);
+            sprintf(alloc_size, "%d", valueStrSize * 2 + 2);
             fprintlnWithArg("ALLOC", alloc_size, listingFile);
-            for (int i = 0; i < str_len; ++i) {
+            for (int i = 0; i < valueStrSize; ++i) {
                 char shift[30];
                 sprintf(shift, "%d", 8 * 2 * i);
                 fprintlnWithArg("PUSH", "1", listingFile);
                 fprintlnWithArg("PUSH", shift, listingFile);
                 fprintln("SUM", listingFile);
                 char value[30];
-                sprintf(value, "%d", (int) str[i]);
+                sprintf(value, "%d", (int) constValue[i]);
                 fprintlnWithArg("PUSH", "3", listingFile);
                 fprintlnWithArg("PUSH", value, listingFile);
 //                возвращает индекс, в который записал значение
@@ -118,7 +119,7 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
                 fprintln("SUB", listingFile);
             }
             char shift[30];
-            sprintf(shift, "%d", 8 * 2 * str_len);
+            sprintf(shift, "%d", 8 * 2 * valueStrSize);
             fprintlnWithArg("PUSH", "1", listingFile);
             fprintlnWithArg("PUSH", shift, listingFile);
             fprintln("SUM", listingFile);
@@ -129,8 +130,11 @@ void tryPrintOperationTreeNode(TreeNode *operationTree, FILE *listingFile, List 
             fprintlnWithArg("PUSH", shift, listingFile);
             fprintln("SUB", listingFile);
 
+        } else if (!strcmp(constType, "label")) {
+            fprintlnWithArg("PUSH", "4", listingFile);
+            fprintlnWithArg("PUSH", constValue, listingFile);
         } else {
-            fprintln("EXCEPTION", listingFile);
+            printException(operationType);
         }
     } else if (!strcmp(operationType, "SET")) {
         TreeNode *placeNode = operationTree->childNodes[0];
