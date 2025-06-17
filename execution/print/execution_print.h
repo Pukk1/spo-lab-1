@@ -13,7 +13,7 @@
 #include "../../common/node/tree_node_util.h"
 
 
-void printExecution(SourceItemExecution *funExecution, FILE *outputFunCallFile, FILE *outputOperationTreesFile,
+void printExecution(FunExecution *funExecution, FILE *outputFunCallFile, FILE *outputOperationTreesFile,
                     FILE *outputExecutionFile);
 
 #endif //SPO_LAB1_EXECUTION_PRINT_H

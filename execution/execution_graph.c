@@ -413,10 +413,9 @@ ExecutionNode *functionArgsExecutionNode(TreeNode *functionSignatureNode, Execut
     return node;
 }
 
-ExecutionNode *initGraph(TreeNode *sourceItem, FunCalls *funCalls) {
+ExecutionNode *initGraph(TreeNode *funcDefNode, FunCalls *funCalls) {
     ExecutionNode *startNode = initExecutionNode("START");
     ExecutionNode *endNode = initExecutionNode("FINISH");
-    TreeNode *funcDefNode = sourceItem->childNodes[0];
     TreeNode *funcSignatureNode = funcDefNode->childNodes[0];
 
     ExecutionNode *listStatements = listStatementExecutionNode(funcDefNode, endNode, funCalls);
@@ -426,66 +425,94 @@ ExecutionNode *initGraph(TreeNode *sourceItem, FunCalls *funCalls) {
     return startNode;
 }
 
-SourceItemExecution *funExecutionGraph(char *filename, TreeNode *sourceItemNode, bool isMethod) {
-    SourceItemExecution *sourceItemExecution = malloc(sizeof(SourceItemExecution));
-    sourceItemExecution->isMethod = isMethod;
-    sourceItemExecution->filename = filename;
-    TreeNode *funcDefNode = sourceItemNode->childNodes[0];
+FunExecution *initFunExecution(char *filename, bool isMethod, ExecutionNode *nodes, TreeNode *funCalls, char *funName) {
+    FunExecution *funExecution = malloc(sizeof(FunExecution));
+    funExecution->filename = filename;
+    funExecution->isMethod = isMethod;
+    funExecution->nodes = nodes;
+    funExecution->funCalls = funCalls;
+    funExecution->name = mallocString(funName);
+    return funExecution;
+}
+
+FunExecution *funExecutionGraph(char *filename, TreeNode *funcDefNode, bool isMethod) {
     TreeNode *funcSignatureNode = funcDefNode->childNodes[0];
-    char *funcName = funcSignatureNode->value;
-    sourceItemExecution->name = funcName;
+    char *funName = funcSignatureNode->value;
 
     List *functions = mallocEmptyList();
-    FunCalls funCalls = (FunCalls) {functions, sourceItemExecution->name};
+    FunCalls funCalls = (FunCalls) {functions, funName};
 
-    sourceItemExecution->nodes = initGraph(sourceItemNode, &funCalls);
+    ExecutionNode *nodes = initGraph(funcDefNode, &funCalls);
 
-    TreeNode *funCallsRoot = mallocTreeNode("currentFunction", sourceItemExecution->name,
-                                            funCalls.funCalls->size);
+    TreeNode *funCallsRoot = mallocTreeNode("currentFunction", funName, funCalls.funCalls->size);
     for (int k = 0; k < funCalls.funCalls->size; ++k) {
         funCallsRoot->childNodes[k] = funCalls.funCalls->elements[k];
     }
-    sourceItemExecution->funCalls = funCallsRoot;
-    return sourceItemExecution;
+    return initFunExecution(filename, isMethod, nodes, funCallsRoot, funName);
 }
 
-//SourceItemExecution *classExecutionsGraphs(char *filename, TreeNode *sourceItemElement) {
-//    TreeNode *classDefNode = sourceItemElement->childNodes[0];
-//    TreeNode *classIdentifierNode = classDefNode->childNodes[0];
-//    SourceItemExecution *constructorFunExecution = malloc(sizeof(SourceItemExecution));
-//    constructorFunExecution->filename = filename;
-//    char classExecutionName[1024];
-//    strcpy(classExecutionName, classIdentifierNode->value);
-//    constructorFunExecution->name = mallocString(classExecutionName);
-////    нужна возможность инициализировать массив
-////    нужна возможность передавать label функции как константу, чтобы ею можно было заполнить массив
-////    нужна возможность сравнивать строки по значению (сделать через либы)
-////    возможность подкючать либы
-////    нужна возможность создавать функции-конструкторы классов
-//    List classMembers = findListItemsUtil()
-//    for (int i = 0; i < ; ++i) {
-//
-//    }
-//
-//    return constructorFunExecution;
-//}
+TreeNode *initFuncDefNode(char *funName, bool hasMembers) {
+    int childNumber = 1;
+    if (hasMembers) {
+        childNumber = 2;
+    }
+    TreeNode *funcDefNode = mallocTreeNode("funcDef", NULL, childNumber);
+    TreeNode *funcSignatureNode = mallocTreeNode("funcSignature", funName, 0);
+    funcDefNode->childNodes[0] = funcSignatureNode;
+    return funcDefNode;
+}
+
+TreeNode *initConstructorFunNode(char *funName, List classMembers) {
+    bool hasMembers = classMembers.size > 0;
+    //TODO
+    hasMembers = false;
+    TreeNode *funcDefNode = initFuncDefNode(funName, hasMembers);
+//    TODO("наполнение членами класса")
+    return funcDefNode;
+}
+
+FunExecution *classExecutionsGraphs(char *filename, TreeNode *classDefNode, List *funExecutions) {
+    List classMembers = *mallocEmptyList();
+    if (classDefNode->childrenNumber > 1) {
+        TreeNode *classMembersListNode = classDefNode->childNodes[1];
+        classMembers = findListItemsUtil(classMembersListNode);
+    }
+    for (int i = 0; i < classMembers.size; ++i) {
+        TreeNode *classMemberNode = classMembers.elements[i];
+        TreeNode *classMemberTypeNode = classMemberNode->childNodes[1];
+        char *classMemberType = classMemberTypeNode->type;
+        if (!strcmp(classMemberType, "classFunc")) {
+            TreeNode *funcDefNode = classMemberTypeNode->childNodes[0];
+            FunExecution *methodExecution = funExecutionGraph(filename, funcDefNode, true);
+            addToList(funExecutions, methodExecution);
+        }
+    }
+
+    TreeNode *classSignatureNode = classDefNode->childNodes[0];
+    char *className = classSignatureNode->value;
+    TreeNode *constructorFunNode = initConstructorFunNode(className, classMembers);
+    return funExecutionGraph(filename, constructorFunNode, false);
+}
 
 List *executionGraph(FilenameParseTree *input, int size) {
-    List *result = mallocEmptyList();
+    List *funExecutions = mallocEmptyList();
 
     for (int i = 0; i < size; ++i) {
         FilenameParseTree currentFileParseTree = input[i];
         List sourceItems = findSourceItems(findSourceNode(currentFileParseTree));
         for (int j = 0; j < sourceItems.size; ++j) {
             TreeNode *sourceItem = sourceItems.elements[j];
-            void *sourceItemExecution;
-            if (!strcmp(sourceItem->childNodes[0]->type, "funcDef")) {
-                sourceItemExecution = funExecutionGraph(currentFileParseTree.filename, sourceItem, false);
+            TreeNode *sourceItemDefNode = sourceItem->childNodes[0];
+            FunExecution *funExecution;
+            if (!strcmp(sourceItemDefNode->type, "funcDef")) {
+                funExecution = funExecutionGraph(currentFileParseTree.filename, sourceItemDefNode, false);
+            } else if (!strcmp(sourceItemDefNode->type, "classDef")) {
+                funExecution = classExecutionsGraphs(currentFileParseTree.filename, sourceItemDefNode, funExecutions);
             } else {
-//                sourceItemExecution = classExecutionsGraphs(currentFileParseTree.filename, sourceItem);
+                printException(sourceItemDefNode->type);
             }
-            addToList(result, sourceItemExecution);
+            addToList(funExecutions, funExecution);
         }
     }
-    return result;
+    return funExecutions;
 }

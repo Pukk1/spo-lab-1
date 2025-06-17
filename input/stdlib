@@ -110,3 +110,11 @@ function find_object_member_by_name(object as int, name as string) as int
     wend
     result;
 end function
+
+function init_object_member(name as string, value as int, access_modifier as int)
+    dim member as string(,,,)
+    member[0] = name;
+    member[1] = value;
+    member[2] = access_modifier;
+    member;
+end function

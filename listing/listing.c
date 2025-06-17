@@ -285,17 +285,13 @@ void printListing(List *funExecutions, FILE *listingFile) {
     fprintln("POP", listingFile);
     fprintln("HLT", listingFile);
     for (int i = 0; i < funExecutions->size; ++i) {
-        SourceItemExecution *funExecution = funExecutions->elements[i];
-        List *valuePlaceAssociations = malloc(sizeof(List));
+        FunExecution *funExecution = funExecutions->elements[i];
+        List *valuePlaceAssociations = mallocEmptyList();
         int argumentNumber = 0;
         if (funExecution->isMethod) {
-//        this
             argumentNumber++;
             addArgumentPlace(valuePlaceAssociations, "this");
         }
-        valuePlaceAssociations->capacity = 100;
-        valuePlaceAssociations->size = 0;
-        valuePlaceAssociations->elements = malloc(sizeof(ValuePlaceAssociation) * 100);
         char funLabel[1000];
         sprintf(funLabel, "%s:", funExecution->name);
         fprintln(funLabel, listingFile);

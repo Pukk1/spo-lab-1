@@ -10,7 +10,7 @@
 //#include "../listing/listing_types.h"
 
 typedef struct ExecutionNode ExecutionNode;
-typedef struct SourceItemExecution SourceItemExecution;
+typedef struct FunExecution FunExecution;
 typedef struct ListingNode ListingNode;
 
 struct ExecutionNode {
@@ -23,7 +23,7 @@ struct ExecutionNode {
     ListingNode *listingNode;
 };
 
-struct SourceItemExecution {
+struct FunExecution {
     char *name;
     char *filename;
     TreeNode *funCalls;

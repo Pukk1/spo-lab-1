@@ -1,7 +1,14 @@
-function main(a as int, b as string)
-    dim str as string
-    asd();
-    str.asd();
-    asd[0];
-    str.asd[0]();
+function A()
+    dim members as string
+    members = "aa";
+    members[0] = init_object_member("a", 0, 1);
+    members[1] = init_object_member("test", "<test function lable>", 1);
+    members;
 end function
+
+class A
+    public dim aField as string
+
+    public function aFunc() as string
+    end function
+end class

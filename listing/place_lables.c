@@ -40,7 +40,7 @@ void tryPlaceLabel(ExecutionNode *executionNode, int *labelCounter, bool necessa
 void placeLabels(List *funExecutions) {
     int labelCounter = 0;
     for (int i = 0; i < funExecutions->size; ++i) {
-        SourceItemExecution *funExecution = funExecutions->elements[i];
+        FunExecution *funExecution = funExecutions->elements[i];
         tryPlaceLabel(funExecution->nodes, &labelCounter, false);
     }
 }

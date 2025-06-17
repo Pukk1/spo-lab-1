@@ -13,13 +13,13 @@ void printParseTree(char *outputDirName, FILE *inputFile, char *baseInputFileNam
 void printExecutionGraph(char *outputDirName, char *baseInputFileName, ParseResult *resultParseTree,
                          List *resultExecutionGraph) {
     for (int j = 0; j < resultExecutionGraph->size; ++j) {
-        SourceItemExecution *funExecution = resultExecutionGraph->elements[j];
+        FunExecution *funExecution = resultExecutionGraph->elements[j];
         for (int k = 0; k < funExecution->errorsCount; ++k) {
             fprintf(stderr, "%s", funExecution->errors[k]);
         }
     }
     for (int j = 0; j < resultExecutionGraph->size; ++j) {
-        SourceItemExecution *funExecution = resultExecutionGraph->elements[j];
+        FunExecution *funExecution = resultExecutionGraph->elements[j];
 
         char outputFunCallFileName[1024];
         sprintf(outputFunCallFileName, "%s/%s.%s.ext-fun-call.txt", outputDirName, basename(funExecution->filename),
