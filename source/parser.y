@@ -132,11 +132,11 @@ classDef: CLASS IDENTIFIER listClassMember END CLASS {{TreeNode* elements[] = {$
 
 classMember: classMemberModifier classMemberDef {{TreeNode* elements[] = {$1, $2}; $$ = createNode("classMember", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-classMemberDef: var {{TreeNode* elements[] = {$1}; $$ = createNode("classField", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
-    | funcDef {{TreeNode* elements[] = {$1}; $$ = createNode("classFunc", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+classMemberDef: var {{TreeNode* elements[] = {$1}; $$ = createNode("classMemberDef", mallocChildNodes(*(&elements + 1) - elements, elements), "field");}}
+    | funcDef {{TreeNode* elements[] = {$1}; $$ = createNode("classMemberDef", mallocChildNodes(*(&elements + 1) - elements, elements), "func");}};
 
-classMemberModifier: PRIVATE {{;$$ = createNode("private", NULL, "");}}
-    | PUBLIC {{;$$ = createNode("public", NULL, "");}};
+classMemberModifier: PRIVATE {{;$$ = createNode("classMemberModifier", NULL, "private");}}
+    | PUBLIC {{;$$ = createNode("classMemberModifier", NULL, "public");}};
 
 listClassMember: {{$$ = NULL;}}
     | classMember listClassMember   {{TreeNode* elements[] = {$1, $2};$$ = createNode("listClassMember", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};

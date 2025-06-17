@@ -462,12 +462,186 @@ TreeNode *initFuncDefNode(char *funName, bool hasMembers) {
     return funcDefNode;
 }
 
+TreeNode *initBinaryListNode(TreeNode *valueNode, TreeNode *previousListNode, bool hasNext, char *nodeName) {
+    int childNumber = 1;
+    if (hasNext) {
+        childNumber = 2;
+    }
+    TreeNode *listNode = mallocTreeNode(nodeName, NULL, childNumber);
+    listNode->childNodes[0] = valueNode;
+    previousListNode->childNodes[1] = listNode;
+    return listNode;
+}
+
+TreeNode *initListStatementNode(TreeNode *statementNode, TreeNode *previousStatementListNode, bool hasNext) {
+    return initBinaryListNode(
+            statementNode,
+            previousStatementListNode,
+            hasNext,
+            "listStatement"
+    );
+}
+
+TreeNode *initListExprNode(TreeNode *exprNode, TreeNode *previousExprListNode, bool hasNext) {
+    return initBinaryListNode(
+            exprNode,
+            previousExprListNode,
+            hasNext,
+            "listExpr"
+    );
+}
+
+TreeNode *initDimMembersNode() {
+    TreeNode *varNode = mallocTreeNode("var", NULL, 2);
+    TreeNode *listVarNode = mallocTreeNode("listVar", NULL, 1);
+    varNode->childNodes[0] = listVarNode;
+    TreeNode *varIdentifierNode = mallocTreeNode("IDENTIFIER", "members", 0);
+    listVarNode->childNodes[0] = varIdentifierNode;
+    TreeNode *typeDefNode = mallocTreeNode("TYPEDEF", "string", 0);
+    varNode->childNodes[1] = typeDefNode;
+    return varNode;
+}
+
+TreeNode *initMembersStartValueNode(int membersNumber) {
+    TreeNode *membersSetNode = mallocTreeNode("SET", NULL, 2);
+    TreeNode *localPlaceLinkNode = mallocTreeNode("localPlaceLink", "members", 0);
+    membersSetNode->childNodes[0] = localPlaceLinkNode;
+    TreeNode *strNode = mallocTreeNode("STR", createSpacesString(membersNumber), 0);
+    membersSetNode->childNodes[1] = strNode;
+    return membersSetNode;
+}
+
+TreeNode *initSetMembersStartArrayNode(int membersNumber) {
+    TreeNode *setMembersValueNode = mallocTreeNode("SET", NULL, 2);
+    TreeNode *membersPlaceLinkNode = mallocTreeNode("localPlaceLink", "members", 0);
+    setMembersValueNode->childNodes[0] = membersPlaceLinkNode;
+    TreeNode *membersStartValueNode = initMembersStartValueNode(membersNumber);
+    setMembersValueNode->childNodes[1] = membersStartValueNode;
+    return setMembersValueNode;
+}
+
+char *fieldName(TreeNode *classMemberNode) {
+    TreeNode *classMemberDefNode = classMemberNode->childNodes[0];
+    TreeNode *varNode = classMemberDefNode->childNodes[0];
+    TreeNode *listVarNode = varNode->childNodes[0];
+    TreeNode *fieldIdentifierNode = listVarNode->childNodes[0];
+    return fieldIdentifierNode->value;
+}
+
+char *funcName(TreeNode *classMemberNode) {
+    TreeNode *classMemberDefNode = classMemberNode->childNodes[1];
+    TreeNode *funcDefNode = classMemberDefNode->childNodes[0];
+    TreeNode *funcSignatureNode = funcDefNode->childNodes[0];
+    return funcSignatureNode->value;
+}
+
+bool classMemberIsField(TreeNode *classMemberNode) {
+    TreeNode *classMemberDefNode = classMemberNode->childNodes[0];
+    bool isField = false;
+    if (!strcmp(classMemberDefNode->value, "field")) {
+        isField = true;
+    }
+    return isField;
+}
+
+char *classMemberName(TreeNode *classMemberNode) {
+    char *memberName = NULL;
+    if (classMemberIsField(classMemberNode)) {
+        memberName = fieldName(classMemberNode);
+    } else {
+        memberName = funcName(classMemberNode);
+    }
+    return memberName;
+}
+
+bool classMemberIsPublic(TreeNode *classMemberNode) {
+    TreeNode *classMemberModifierNode = classMemberNode->childNodes[0];
+    bool isPublic = false;
+    if (!strcmp(classMemberModifierNode->value, "public")) {
+        isPublic = true;
+    }
+    return isPublic;
+}
+
+TreeNode *initMemberIndexPlaceLinkNode(int memberNumber) {
+    TreeNode *indexPlaceLinkNode = mallocTreeNode("indexPlaceLink", NULL, 2);
+    TreeNode *readPlaceNode = mallocTreeNode("readPlace", NULL, 1);
+    indexPlaceLinkNode->childNodes[0] = readPlaceNode;
+    TreeNode *localPlaceLinkNode = mallocTreeNode("localPlaceLink", "members", 0);
+    readPlaceNode->childNodes[0] = localPlaceLinkNode;
+
+    char memberNumberStr[10] = "";
+    sprintf(memberNumberStr, "%d", memberNumber);
+    TreeNode *decIndexNode = mallocTreeNode("DEC", memberNumberStr, 0);
+    indexPlaceLinkNode->childNodes[1] = decIndexNode;
+    return indexPlaceLinkNode;
+}
+
+TreeNode *initObjectMemberCallNode(TreeNode *classMemberNode) {
+    TreeNode *callNode = mallocTreeNode("call", NULL, 2);
+    TreeNode *functionForCallNameNode = mallocTreeNode("functionForCallName", "init_object_member", 0);
+    callNode->childNodes[0] = functionForCallNameNode;
+
+    TreeNode *memberNameListExprNode = initListExprNode(
+            mallocTreeNode("STR", classMemberName(classMemberNode), 0),
+            callNode,
+            true
+    );
+    TreeNode *memberValueListExprNode = initListExprNode(
+            mallocTreeNode("DEC", "0", 0),
+            memberNameListExprNode,
+            true
+    );
+    char *isPublicAsDec = "0";
+    if (classMemberIsPublic(classMemberNode)) {
+        isPublicAsDec = "1";
+    }
+    initListExprNode(
+            mallocTreeNode("DEC", isPublicAsDec, 0),
+            memberValueListExprNode,
+            false
+    );
+    return callNode;
+}
+
+TreeNode *initClassMemberStatementNode(TreeNode *classMemberNode, int memberNumber) {
+    TreeNode *setNode = mallocTreeNode("SET", NULL, 2);
+    setNode->childNodes[0] = initMemberIndexPlaceLinkNode(memberNumber);
+    setNode->childNodes[1] = initObjectMemberCallNode(classMemberNode);
+    return setNode;
+}
+
+TreeNode *initReadMembersStatementNode() {
+    TreeNode *readPlaceNode = mallocTreeNode("readPlace", NULL, 1);
+    TreeNode *localPlaceLinkNode = mallocTreeNode("localPlaceLink", "members", 0);
+    readPlaceNode->childNodes[0] = localPlaceLinkNode;
+    return readPlaceNode;
+}
+
+// создание функции конструктора для класса
 TreeNode *initConstructorFunNode(char *funName, List classMembers) {
     bool hasMembers = classMembers.size > 0;
-    //TODO
-    hasMembers = false;
     TreeNode *funcDefNode = initFuncDefNode(funName, hasMembers);
-//    TODO("наполнение членами класса")
+    TreeNode *dimMembersListStatementNode = initListStatementNode(
+            initDimMembersNode(),
+            funcDefNode,
+            true
+    );
+    TreeNode *setMembersListStatementNode = initListStatementNode(
+            initSetMembersStartArrayNode(classMembers.size),
+            dimMembersListStatementNode,
+            true
+    );
+    TreeNode *previousListStatement = setMembersListStatementNode;
+    for (int memberNumber = 0; memberNumber < classMembers.size; ++memberNumber) {
+        TreeNode *classMemberNode = classMembers.elements[memberNumber];
+        previousListStatement = initListStatementNode(
+                initClassMemberStatementNode(classMemberNode, memberNumber),
+                previousListStatement,
+                true
+        );
+    }
+    initListStatementNode(initReadMembersStatementNode(), previousListStatement, false);
     return funcDefNode;
 }
 

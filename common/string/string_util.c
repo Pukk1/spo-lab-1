@@ -9,3 +9,13 @@ char *mallocString(char *text) {
     sprintf(pointer, "%s", text);
     return pointer;
 }
+
+char *createSpacesString(int length) {
+    char *str = (char *) malloc(length + 1);
+
+    // Заполняем строку пробелами
+    memset(str, ' ', length);
+    str[length] = '\0';
+
+    return str;
+}

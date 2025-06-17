@@ -111,10 +111,10 @@ function find_object_member_by_name(object as int, name as string) as int
     result;
 end function
 
-function init_object_member(name as string, value as int, access_modifier as int)
+function init_object_member(name as string, value as int, is_public as bool)
     dim member as string(,,,)
     member[0] = name;
     member[1] = value;
-    member[2] = access_modifier;
+    member[2] = is_public;
     member;
 end function
