@@ -22,6 +22,6 @@ struct FilenameParseTree {
     ParseResult *tree;
 };
 
-List *executionGraph(FilenameParseTree *input, int size);
+List *executionGraph(List *filenameParseTreeList);
 
 #endif // SPO_LAB1_EXECUTION_GRAPH_H

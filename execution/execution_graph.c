@@ -661,20 +661,20 @@ FunExecution *classExecutionsGraphs(char *filename, TreeNode *classDefNode, List
     return funExecutionGraph(filename, constructorFunNode, false);
 }
 
-List *executionGraph(FilenameParseTree *input, int size) {
+List *executionGraph(List *filenameParseTreeList) {
     List *funExecutions = mallocEmptyList();
 
-    for (int i = 0; i < size; ++i) {
-        FilenameParseTree currentFileParseTree = input[i];
-        List sourceItems = findSourceItems(findSourceNode(currentFileParseTree));
+    for (int i = 0; i < filenameParseTreeList->size; ++i) {
+        FilenameParseTree *currentFileParseTree = filenameParseTreeList->elements[i];
+        List sourceItems = findSourceItems(findSourceNode(*currentFileParseTree));
         for (int j = 0; j < sourceItems.size; ++j) {
             TreeNode *sourceItem = sourceItems.elements[j];
             TreeNode *sourceItemDefNode = sourceItem->childNodes[0];
             FunExecution *funExecution;
             if (!strcmp(sourceItemDefNode->type, "funcDef")) {
-                funExecution = funExecutionGraph(currentFileParseTree.filename, sourceItemDefNode, false);
+                funExecution = funExecutionGraph(currentFileParseTree->filename, sourceItemDefNode, false);
             } else if (!strcmp(sourceItemDefNode->type, "classDef")) {
-                funExecution = classExecutionsGraphs(currentFileParseTree.filename, sourceItemDefNode, funExecutions);
+                funExecution = classExecutionsGraphs(currentFileParseTree->filename, sourceItemDefNode, funExecutions);
             } else {
                 printException(sourceItemDefNode->type);
             }

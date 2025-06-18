@@ -10,8 +10,7 @@ void printParseTree(char *outputDirName, FILE *inputFile, char *baseInputFileNam
 }
 
 
-void printExecutionGraph(char *outputDirName, char *baseInputFileName, ParseResult *resultParseTree,
-                         List *resultExecutionGraph) {
+void printExecutionGraph(char *outputDirName, List *resultExecutionGraph) {
     for (int j = 0; j < resultExecutionGraph->size; ++j) {
         FunExecution *funExecution = resultExecutionGraph->elements[j];
         for (int k = 0; k < funExecution->errorsCount; ++k) {
@@ -83,6 +82,8 @@ int main(int argc, char *argv[]) {
         inputFiles[i] = inputFile;
     }
 
+    List *fileNameParseTreeList = mallocEmptyList();
+
     for (int i = 0; i < inputFilesNumber; ++i) {
         FILE *inputFile = inputFiles[i];
         char *baseInputFileName = basename(inputFilesNames[i]);
@@ -90,15 +91,17 @@ int main(int argc, char *argv[]) {
         ParseResult *resultParseTree = parse(inputFile);
         printParseTree(outputDirName, inputFile, baseInputFileName, resultParseTree);
 
-        FilenameParseTree fileNameParseTree = (FilenameParseTree) {baseInputFileName, resultParseTree};
-        List *resultExecutionGraph = executionGraph(&fileNameParseTree, 1);
-        printExecutionGraph(outputDirName, baseInputFileName, resultParseTree, resultExecutionGraph);
-
-        placeLabels(resultExecutionGraph);
-        printListingToFile(resultExecutionGraph, outputDirName);
-
-        freeMem(resultParseTree);
+        FilenameParseTree *fileNameParseTree = malloc(sizeof(FilenameParseTree));
+        fileNameParseTree->filename = baseInputFileName;
+        fileNameParseTree->tree = resultParseTree;
+        addToList(fileNameParseTreeList, fileNameParseTree);
     }
+
+    List *resultExecutionGraph = executionGraph(fileNameParseTreeList);
+    printExecutionGraph(outputDirName, resultExecutionGraph);
+    placeLabels(resultExecutionGraph);
+
+    printListingToFile(resultExecutionGraph, outputDirName);
 
     fileCloses(outputDir, inputFiles, inputFilesNumber);
     return 0;
