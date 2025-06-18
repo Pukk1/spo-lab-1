@@ -51,8 +51,8 @@ architecture spo309681 {
 
         instruction load = { 0000 0000 0000 0101 } {
             let addr = ram:8[SP];
-            ram:8[SP + 8] = ram:8[addr];
-            ram:8[SP] = ram:8[addr + 8];
+            ram:8[SP] = ram:8[addr];
+            ram:8[SP + 8] = ram:8[addr + 8];
             IP = IP + 2;
         };
 
@@ -70,8 +70,8 @@ architecture spo309681 {
             let type = ram:8[SP];
             SP = SP + 8;
             let addr = ram:8[SP];
-            ram:8[addr] = type;
-            ram:8[addr + 8] = value;
+            ram:8[addr] = value;
+            ram:8[addr + 8] = type;
             IP = IP + 2;
         };
 
