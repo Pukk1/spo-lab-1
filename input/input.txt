@@ -122,33 +122,20 @@ function init_object_member(name as string, value as int, is_public as bool)
     member;
 end function
 
+function read_op()
+    dim op as char
+    op = stdin();
+    stdin();
+    stdin();
+    op;
+end function
+
 class Calculator
-    private dim first as int
-    private dim second as int
-    private dim op as char
-    private dim res as int
+    public dim first as int
+    public dim second as int
+    public dim op as char
 
-    private function read_first()
-        this.first = read_num();
-    end function
-
-    private function read_second()
-        this.second = read_num();
-    end function
-
-    private function read_op()
-        this.op = stdin();
-        stdin();
-        stdin();
-    end function
-
-    public function read_inputs()
-        this.read_first();
-        this.read_second();
-        this.read_op();
-    end function
-
-    public function calculate()
+    public function calculate() as res
         dim a as int
         dim b as int
         dim op as char
@@ -156,7 +143,6 @@ class Calculator
         a = this.first;
         b = this.second;
         op = this.op;
-        read_inputs();
         if op == '+' then
             res = sum(a, b);
         end if
@@ -169,21 +155,19 @@ class Calculator
         if op == '/' then
             res = div(a, b);
         end if
-        this.res = res;
-    end function
-
-    public function print_res()
-        print_num(this.res);
+        res;
     end function
 end class
 
 function main()
-    dim calc as int
+    dim calc as string
+
     calc = Calculator();
 
     while true
-        calc.read_inputs();
-        calc.calculate();
-        calc.print_res();
+        calc.first = read_num();
+        calc.op = read_op();
+        calc.second = read_num();
+        print_num(calc.calculate());
     wend
 end function
