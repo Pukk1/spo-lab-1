@@ -122,17 +122,68 @@ function init_object_member(name as string, value as int, is_public as bool)
     member;
 end function
 
-class A
-    public dim a_field as int
-    public function a_func()
-        print_num(this.a_field);
+class Calculator
+    private dim first as int
+    private dim second as int
+    private dim op as char
+    private dim res as int
+
+    private function read_first()
+        this.first = read_num();
+    end function
+
+    private function read_second()
+        this.second = read_num();
+    end function
+
+    private function read_op()
+        this.op = stdin();
+        stdin();
+        stdin();
+    end function
+
+    public function read_inputs()
+        this.read_first();
+        this.read_second();
+        this.read_op();
+    end function
+
+    public function calculate()
+        dim a as int
+        dim b as int
+        dim op as char
+        dim res as int
+        a = this.first;
+        b = this.second;
+        op = this.op;
+        read_inputs();
+        if op == '+' then
+            res = sum(a, b);
+        end if
+        if op == '-' then
+              res = sub(a, b);
+        end if
+        if op == '*' then
+            res = mul(a, b);
+        end if
+        if op == '/' then
+            res = div(a, b);
+        end if
+        this.res = res;
+    end function
+
+    public function print_res()
+        print_num(this.res);
     end function
 end class
 
 function main()
-    dim a as int
-    a = A();
-    a.a_field = 8;
-    a.a_func();
-    0;
+    dim calc as int
+    calc = Calculator();
+
+    while true
+        calc.read_inputs();
+        calc.calculate();
+        calc.print_res();
+    wend
 end function

@@ -5,7 +5,7 @@ int allNodesCount;
 
 
 ParseResult *parse(FILE *file) {
-    allNodes = malloc(1024 * sizeof(TreeNode *));
+    allNodes = malloc(5000 * sizeof(TreeNode *));
     allNodesCount = 0;
 
     yyin = file;
