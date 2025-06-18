@@ -218,7 +218,7 @@ unary: INCREMENT expr            {{TreeNode* elements[] = {$2};$$ = createNode("
     | DECREMENT expr            {{TreeNode* elements[] = {$2};$$ = createNode("DECREMENT", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
     | NOT expr              {{TreeNode* elements[] = {$2};$$ = createNode("NOT", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
-braces: LPAREN expr RPAREN  {{$$ = $1;}};
+braces: LPAREN expr RPAREN  {{$$ = $2;}};
 
 readPlace: placeLink           {{TreeNode* elements[] = {$1};$$ = createNode("readPlace", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
