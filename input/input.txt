@@ -65,72 +65,29 @@ function print_num(num as int) as int
     0;
 end function
 
-function strlen(s as string) as int
-    dim len as int
-    len = 0;
-    while s[0] != 0
-        len = len + 1;
-    wend
-    len;
-end function
-
-function strcmp(s1 as string, s2 as string) as bool
-    dim s1len as int
-    dim s2len as int
-    dim result as bool
-    dim count as int
-    s1len = strlen(s1);
-    s2len = strlen(s2);
-    if s1len != s2len then
-        result = false;
-    else
-        count = 0;
-        while count != s1len
-            if s1[count] != s2[count] then
-                result = false;
-            end if
-            count = count + 1;
-        wend
-    end if
-    result;
-end function
-
-function find_object_member_by_name(object as string, name as string) as string
-    dim result as string
-    dim count as int
-    dim tmp_result as bool
-
-    result = 0;
-    count = 0;
-    while object[count][0] != 0
-        tmp_result = strcmp(object[count][0], name);
-        if tmp_result == true then
-            result = object[count] + 16;
-        end if
-    wend
-    result;
-end function
-
-function init_object_member(name as string, value as int, is_public as bool)
-    dim member as string(,,,)
-    member = "   ";
-    member[0] = name;
-    member[1] = value;
-    member[2] = is_public;
-    member;
-end function
-
 function main()
-    dim a as string
-    a = A();
-    a.a_field = 1;
-    print_num(a.a_field);
+    dim a as int
+    dim b as int
+    dim op as int
+    dim res as int
+    while true
+        a = read_num();
+        op = stdin();
+        stdin();
+        stdin();
+        b = read_num();
+        if op == '+' then
+            res = sum(a, b);
+        end if
+        if op == '-' then
+            res = sub(a, b);
+        end if
+        if op == '*' then
+            res = mul(a, b);
+        end if
+        if op == '/' then
+            res = div(a, b);
+        end if
+        print_num(res);
+    wend
 end function
-
-class A
-    public dim a_field as int
-
-    public function a_fun(value as int)
-        a_field = value;
-    end function
-end class
