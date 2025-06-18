@@ -125,8 +125,6 @@ function main()
     a = A();
     a.a_field = 1;
     print_num(a.a_field);
-    a.a_fun(2);
-    print_num(a.a_field);
 end function
 
 class A
