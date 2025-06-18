@@ -68,7 +68,7 @@ end function
 function strlen(s as string) as int
     dim len as int
     len = 0;
-    while s[0] != 0
+    while s[len] != 0
         len = len + 1;
     wend
     len;
@@ -85,6 +85,7 @@ function strcmp(s1 as string, s2 as string) as bool
         result = false;
     else
         count = 0;
+        result = true;
         while count != s1len
             if s1[count] != s2[count] then
                 result = false;
@@ -102,11 +103,12 @@ function find_object_member_by_name(object as string, name as string) as string
 
     result = 0;
     count = 0;
-    while object[count][0] != 0
+    while object[count] != 0
         tmp_result = strcmp(object[count][0], name);
         if tmp_result == true then
             result = object[count] + 16;
         end if
+        count = count + 1;
     wend
     result;
 end function

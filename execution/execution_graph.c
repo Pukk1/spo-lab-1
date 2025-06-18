@@ -490,12 +490,8 @@ TreeNode *initDimMembersNode() {
 }
 
 TreeNode *initMembersStartValueNode(int membersNumber) {
-    TreeNode *membersSetNode = mallocTreeNode("SET", NULL, 2);
-    TreeNode *localPlaceLinkNode = mallocTreeNode("localPlaceLink", "members", 0);
-    membersSetNode->childNodes[0] = localPlaceLinkNode;
     TreeNode *strNode = mallocTreeNode("STR", createSpacesString(membersNumber), 0);
-    membersSetNode->childNodes[1] = strNode;
-    return membersSetNode;
+    return strNode;
 }
 
 TreeNode *initSetMembersStartArrayNode(int membersNumber) {
@@ -508,7 +504,7 @@ TreeNode *initSetMembersStartArrayNode(int membersNumber) {
 }
 
 char *fieldName(TreeNode *classMemberNode) {
-    TreeNode *classMemberDefNode = classMemberNode->childNodes[0];
+    TreeNode *classMemberDefNode = classMemberNode->childNodes[1];
     TreeNode *varNode = classMemberDefNode->childNodes[0];
     TreeNode *listVarNode = varNode->childNodes[0];
     TreeNode *fieldIdentifierNode = listVarNode->childNodes[0];
@@ -523,7 +519,7 @@ char *funcName(TreeNode *classMemberNode) {
 }
 
 bool classMemberIsField(TreeNode *classMemberNode) {
-    TreeNode *classMemberDefNode = classMemberNode->childNodes[0];
+    TreeNode *classMemberDefNode = classMemberNode->childNodes[1];
     bool isField = false;
     if (!strcmp(classMemberDefNode->value, "field")) {
         isField = true;
@@ -539,6 +535,16 @@ char *classMemberName(TreeNode *classMemberNode) {
         memberName = funcName(classMemberNode);
     }
     return memberName;
+}
+
+char *classMemberValue(TreeNode *classMemberNode) {
+    char *memberValue = NULL;
+    if (classMemberIsField(classMemberNode)) {
+        memberValue = "0";
+    } else {
+        memberValue = funcName(classMemberNode);
+    }
+    return memberValue;
 }
 
 bool classMemberIsPublic(TreeNode *classMemberNode) {
@@ -575,7 +581,7 @@ TreeNode *initObjectMemberCallNode(TreeNode *classMemberNode) {
             true
     );
     TreeNode *memberValueListExprNode = initListExprNode(
-            mallocTreeNode("DEC", "0", 0),
+            mallocTreeNode("DEC", classMemberValue(classMemberNode), 0),
             memberNameListExprNode,
             true
     );
@@ -641,8 +647,8 @@ FunExecution *classExecutionsGraphs(char *filename, TreeNode *classDefNode, List
     for (int i = 0; i < classMembers.size; ++i) {
         TreeNode *classMemberNode = classMembers.elements[i];
         TreeNode *classMemberTypeNode = classMemberNode->childNodes[1];
-        char *classMemberType = classMemberTypeNode->type;
-        if (!strcmp(classMemberType, "classFunc")) {
+        char *classMemberType = classMemberTypeNode->value;
+        if (!strcmp(classMemberType, "func")) {
             TreeNode *funcDefNode = classMemberTypeNode->childNodes[0];
             FunExecution *methodExecution = funExecutionGraph(filename, funcDefNode, true);
             addToList(funExecutions, methodExecution);
