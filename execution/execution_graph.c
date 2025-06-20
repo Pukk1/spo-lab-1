@@ -673,12 +673,15 @@ List *executionGraph(List *filenameParseTreeList) {
             FunExecution *funExecution;
             if (!strcmp(sourceItemDefNode->type, "funcDef")) {
                 funExecution = funExecutionGraph(currentFileParseTree->filename, sourceItemDefNode, false);
+                addToList(funExecutions, funExecution);
             } else if (!strcmp(sourceItemDefNode->type, "classDef")) {
                 funExecution = classExecutionsGraphs(currentFileParseTree->filename, sourceItemDefNode, funExecutions);
+                addToList(funExecutions, funExecution);
+            } else if (!strcmp(sourceItemDefNode->type, "interfaceDef")){
+
             } else {
                 printException(sourceItemDefNode->type);
             }
-            addToList(funExecutions, funExecution);
         }
     }
     return funExecutions;

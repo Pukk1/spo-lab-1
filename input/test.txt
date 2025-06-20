@@ -1,8 +1,12 @@
 interface I
     public function sum(arg as int) as int
+    end function
     public function sub(arg as int) as int
+    end function
     public function mul(arg as int) as int
+    end function
     public function div(arg as int) as int
+    end function
 end interface
 
 class Cal implements I
@@ -74,7 +78,7 @@ function main()
     dim calc as string
     dim ui as string
 
-    calc = Calculator();
+    calc = Cal();
     ui = CalUI();
     ui.setup(calc);
 

@@ -133,7 +133,7 @@ optionalTypeRef:            {{ $$ = NULL; }}
 
 
 /* Class */
-classDef: CLASS IDENTIFIER implementation listClassMember END CLASS {{TreeNode* elements[] = {$2, $3}; $$ = createNode("classDef", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+classDef: CLASS IDENTIFIER implementation listClassMember END CLASS {{TreeNode* elements[] = {$2, $4}; $$ = createNode("classDef", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 implementation: {{$$ = NULL;}}
     | IMPLEMENTS IDENTIFIER {{TreeNode* elements[] = {$2}; $$ = createNode("implementation", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
