@@ -17,7 +17,9 @@
 %token <node> DECREMENT INCREMENT
 %token <node> FUNCTION
 %token <node> CLASS
+%token <node> INTERFACE
 %token <node> THIS
+%token <node> IMPLEMENTS
 %token <node> SUPER
 %token <node> PUBLIC
 %token <node> PRIVATE
@@ -93,10 +95,12 @@
 %type <node> arrayCommas
 %type <node> funcDef
 %type <node> classDef
+%type <node> interfaceDef
 %type <node> classMember
 %type <node> classMemberDef
 %type <node> classMemberModifier
 %type <node> listClassMember
+%type <node> implementation
 
 %%
 /* SourceItem */
@@ -105,6 +109,7 @@ source: listSourceItem      {{TreeNode* elements[] = {$1};$$ = createNode("sourc
 
 sourceItem: funcDef         {{TreeNode* elements[] = {$1};$$ = createNode("sourceItem", mallocChildNodes(*(&elements + 1) - elements, elements), "");}}
     | classDef              {{TreeNode* elements[] = {$1};$$ = createNode("sourceItem", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+    | interfaceDef              {{TreeNode* elements[] = {$1};$$ = createNode("sourceItem", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 listSourceItem:             {{$$ = NULL;}}
     | sourceItem listSourceItem     {{TreeNode* elements[] = {$1, $2}; $$ = createNode("listSourceItem", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
@@ -128,7 +133,10 @@ optionalTypeRef:            {{ $$ = NULL; }}
 
 
 /* Class */
-classDef: CLASS IDENTIFIER listClassMember END CLASS {{TreeNode* elements[] = {$2, $3}; $$ = createNode("classDef", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+classDef: CLASS IDENTIFIER implementation listClassMember END CLASS {{TreeNode* elements[] = {$2, $3}; $$ = createNode("classDef", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
+
+implementation: {{$$ = NULL;}}
+    | IMPLEMENTS IDENTIFIER {{TreeNode* elements[] = {$2}; $$ = createNode("implementation", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 classMember: classMemberModifier classMemberDef {{TreeNode* elements[] = {$1, $2}; $$ = createNode("classMember", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
@@ -141,6 +149,8 @@ classMemberModifier: PRIVATE {{;$$ = createNode("classMemberModifier", NULL, "pr
 listClassMember: {{$$ = NULL;}}
     | classMember listClassMember   {{TreeNode* elements[] = {$1, $2};$$ = createNode("listClassMember", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
+/* Interface */
+interfaceDef: INTERFACE IDENTIFIER listClassMember END INTERFACE {{TreeNode* elements[] = {$2, $3}; $$ = createNode("interfaceDef", mallocChildNodes(*(&elements + 1) - elements, elements), "");}};
 
 
 /* TypeRef */

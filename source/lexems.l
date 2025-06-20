@@ -90,6 +90,10 @@
  yylval.node = createNode("CLASS", NULL, "");
  return CLASS;
  }
+"interface"                            {
+ yylval.node = createNode("INTERFACE", NULL, "");
+ return INTERFACE;
+ }
 "this"                                {
  yylval.node = createNode("this", NULL, "");
  return THIS;
@@ -97,6 +101,10 @@
 "super"                                {
  yylval.node = createNode("super", NULL, "");
  return SUPER;
+ }
+"implements"                                {
+ yylval.node = createNode("implements", NULL, "");
+ return IMPLEMENTS;
  }
 "end"                                {
  yylval.node = createNode("END", NULL, "");
